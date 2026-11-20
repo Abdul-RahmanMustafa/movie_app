@@ -10,8 +10,11 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final formKey = GlobalKey<FormState>();
-  final email = TextEditingController();
-  final password = TextEditingController();
+  // Prefilled demo credentials so the Login button can be tried immediately.
+  // The fields use requiredValidator (not the strict email/password rules)
+  // because 'route1' is a username and is shorter than the 8-char rule.
+  final email = TextEditingController(text: 'route1');
+  final password = TextEditingController(text: 'route1');
 
   @override
   void dispose() {
@@ -31,16 +34,18 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 14),
           Center(child: SizedBox(height: 120, width: 120, child: CustomPaint(painter: _PlayLogoPainter()))),
           const SizedBox(height: 42),
-          AuthField(controller: email, hint: 'Email', icon: Icons.email, keyboardType: TextInputType.emailAddress, validator: emailValidator),
+          AuthField(controller: email, hint: 'Email', icon: Icons.email, keyboardType: TextInputType.emailAddress, validator: requiredValidator),
           const SizedBox(height: 16),
-          AuthField(controller: password, hint: 'Password', icon: Icons.lock, obscure: true, validator: passwordValidator),
+          AuthField(controller: password, hint: 'Password', icon: Icons.lock, obscure: true, validator: requiredValidator),
           Align(alignment: Alignment.centerRight, child: TextButton(
             onPressed: () => showPending(context, 'Password reset'),
             child: const Text('Forget Password ?', style: TextStyle(color: authYellow, fontSize: 12)),
           )),
           const SizedBox(height: 12),
           AuthButton(text: 'Login', onPressed: () {
-            if (formKey.currentState!.validate()) showPending(context, 'Login');
+            // UI-only pass: a valid demo form enters the app at Home.
+            // Replace with Firebase Auth once backend integration lands.
+            if (formKey.currentState!.validate()) context.go('/home');
           }),
           const SizedBox(height: 18),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
