@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -34,6 +34,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+    } else {
+      context.go('/login');
     }
   }
 
