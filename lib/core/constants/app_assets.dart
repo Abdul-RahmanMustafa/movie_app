@@ -15,6 +15,12 @@ abstract final class AppAssets {
   // Full-bleed hero background (supplied home_bg.png).
   static const String homeBackground = 'assets/images/home/home_bg.png';
 
+  // Profile screen assets (Figma frame 51:511).
+  static const String profilePfp = 'assets/images/profile/profile_pfp.png';
+  static const String profilePopcorn = 'assets/images/profile/profile_popcorn.png';
+  static const String profileWatchListIcon = 'assets/images/profile/ic_watch_list.svg';
+  static const String profileHistoryIcon = 'assets/images/profile/ic_history.svg';
+
   // Bottom navigation icons.
   static const String icHome = 'assets/images/home/ic_home.svg';
   static const String icVector = 'assets/images/home/ic_vector.png';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/widgets/app_bottom_navigation_bar.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 
 /// Hosts the four main tabs and overlays the shared bottom navigation bar.
 ///
@@ -24,7 +25,7 @@ class _MainShellState extends State<MainShell> {
     HomeScreen(),
     _PlaceholderTab(title: 'Search', icon: Icons.search),
     _PlaceholderTab(title: 'Explore', icon: Icons.explore_outlined),
-    _PlaceholderTab(title: 'Profile', icon: Icons.person_outline),
+    ProfileScreen(),
   ];
 
   /// Handles a bottom-bar tap and rebuilds only the selected tab.
