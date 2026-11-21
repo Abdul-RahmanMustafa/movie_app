@@ -1,8 +1,6 @@
 # movie_app
 Movie App - Route Graduation Project
 
-> Continuation notes and full handoff: [CONTINUATION.md](CONTINUATION.md)
-
 ## Home screen implementation notes
 
 The Home tab follows Figma `Movies (Copy)`, frame `47:1248`.
@@ -39,4 +37,3 @@ The Explore tab follows Figma `Movies (Copy)`, frame `50:462` ("Browse").
   database/API hand-off points. Replace the private lists in `ExploreScreen`
   with queried data and swap the card's poster/rating/title widgets when the
   database is integrated.
-
