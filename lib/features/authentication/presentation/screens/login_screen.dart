@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/auth_widgets.dart';
+import '../theme/auth_styles.dart';
+import '../utils/auth_validators.dart';
+import '../widgets/auth_button.dart';
+import '../widgets/auth_field.dart';
+import '../widgets/language_toggle.dart';
+import '../widgets/play_logo_painter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
         key: formKey,
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const SizedBox(height: 14),
-          Center(child: SizedBox(height: 120, width: 120, child: CustomPaint(painter: _PlayLogoPainter()))),
+          Center(child: SizedBox(height: 120, width: 120, child: CustomPaint(painter: PlayLogoPainter()))),
           const SizedBox(height: 42),
           AuthField(controller: email, hint: 'Email', icon: Icons.email, keyboardType: TextInputType.emailAddress, validator: requiredValidator),
           const SizedBox(height: 16),
@@ -64,20 +69,4 @@ class _LoginScreenState extends State<LoginScreen> {
       )),
     ))),
   );
-}
-
-class _PlayLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = Paint()..color = authYellow..style = PaintingStyle.stroke..strokeWidth = 3;
-    canvas.drawCircle(Offset(size.width * .58, size.height * .5), size.width * .37, stroke);
-    final path = Path()
-      ..moveTo(size.width * .23, size.height * .24)
-      ..lineTo(size.width * .23, size.height * .76)
-      ..lineTo(size.width * .64, size.height * .5)
-      ..close();
-    canvas.drawPath(path, Paint()..color = authYellow..style = PaintingStyle.stroke..strokeWidth = 12..strokeJoin = StrokeJoin.round);
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

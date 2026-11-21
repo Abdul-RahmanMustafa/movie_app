@@ -11,7 +11,7 @@ abstract final class AppAssets {
   static const String onboarding5 = 'assets/images/onBoarding5.png';
   static const String onboarding6 = 'assets/images/onBoarding6.png';
 
-  // Home screen assets
+  // Home screen dummy assets
   static const String homeHeroGroup = 'assets/images/home/home_hero_group.png';
   static const String homeCardCenter = 'assets/images/home/home_card_center.png';
   static const String homeCardLeft = 'assets/images/home/home_card_left.png';
@@ -21,6 +21,12 @@ abstract final class AppAssets {
   static const String homeActionCard3 = 'assets/images/home/home_action_card_3.png';
   static const String homePoster = 'assets/images/home/home_poster.png';
   static const String homeBackground = 'assets/images/home/home_bg.png';
+
+  // Profile screen assets
+  static const String profilePfp = 'assets/images/profile/profile_pfp.png';
+  static const String profilePopcorn = 'assets/images/profile/profile_popcorn.png';
+  static const String profileWatchListIcon = 'assets/images/profile/ic_watch_list.svg';
+  static const String profileHistoryIcon = 'assets/images/profile/ic_history.svg';
 
   // Bottom navigation icons
   static const String icHome = 'assets/images/home/ic_home.svg';
