@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/app_bottom_navigation_bar.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import 'widgets/placeholder_tab.dart';
 
 /// Hosts the four main tabs and overlays the shared bottom navigation bar.
 ///
@@ -23,8 +24,8 @@ class _MainShellState extends State<MainShell> {
   // Tab order matches the bottom bar: home, search, explore, profile.
   static const List<Widget> _pages = [
     HomeScreen(),
-    _PlaceholderTab(title: 'Search', icon: Icons.search),
-    _PlaceholderTab(title: 'Explore', icon: Icons.explore_outlined),
+    PlaceholderTab(title: 'Search', icon: Icons.search),
+    PlaceholderTab(title: 'Explore', icon: Icons.explore_outlined),
     ProfileScreen(),
   ];
 
@@ -56,31 +57,6 @@ class _MainShellState extends State<MainShell> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Temporary content for tabs that are not implemented yet.
-class _PlaceholderTab extends StatelessWidget {
-  const _PlaceholderTab({required this.title, required this.icon});
-
-  final String title;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Opacity(
-        opacity: 0.6,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 12),
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
-          ],
-        ),
       ),
     );
   }

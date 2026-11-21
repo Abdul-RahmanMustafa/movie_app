@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
-
-/// Section shown below the profile header.
-enum _ProfileSection { none, watchList, history }
-
-const Color _cardBackground = Color(0xFF1D1D1D);
+import '../profile_section.dart';
+import '../models/profile_list_entry.dart';
+import '../widgets/profile_list.dart';
+import '../widgets/profile_shortcut.dart';
+import '../widgets/profile_stat.dart';
 
 /// Profile screen from Figma frame `51:511` (430 × 932).
 ///
-/// The Figma X/Y positions are kept, but every element is rendered slightly
-/// smaller than the raw measurements (`_compact`) and paired items are centred
-/// in equal-width columns so the Watch List / History icons and captions line
-/// up. The shared bottom navigation is drawn by `MainShell`, so the frame's
-/// own nav bar is not duplicated here.
+/// Widget helpers live in their own files under `../widgets`; this file only
+/// owns the screen and its private state. The shared bottom navigation is
+/// drawn by `MainShell`, so the frame's own nav bar is not duplicated here.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -32,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const double _compact = 0.9;
 
   // Watch List is selected by default so its content is visible immediately.
-  _ProfileSection _section = _ProfileSection.watchList;
+  ProfileSection _section = ProfileSection.watchList;
   String _name = 'John Safwat';
 
   Future<void> _openEditProfile() async {
@@ -41,7 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _name = editedName.trim());
   }
 
-  void _selectSection(_ProfileSection section) {
+  void _selectSection(ProfileSection section) {
     setState(() => _section = section);
   }
 
@@ -83,14 +80,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // Counters. Each number and caption are one compact, centred
                 // column so `12 / Wish List` and `10 / History` read as a pair.
-                _ProfileStat(
+                ProfileStat(
                   scale: s,
                   top: 84 * scale,
                   centerX: 238 * scale,
                   number: '12',
                   label: 'Wish List',
                 ),
-                _ProfileStat(
+                ProfileStat(
                   scale: s,
                   top: 84 * scale,
                   centerX: 364 * scale,
@@ -129,7 +126,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: _openEditProfile,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.white,
-                        side: BorderSide(color: AppColors.accent, width: 1.2 * s),
+                        side: BorderSide(
+                          color: AppColors.accent,
+                          width: 1.2 * s,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12 * s),
                         ),
@@ -156,27 +156,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // Shortcut buttons. Each pair shares a centre X, so the icon
                 // sits directly above its caption and both groups are balanced.
-                _ProfileShortcut(
+                ProfileShortcut(
                   scale: s,
                   centerX: 112 * scale,
                   top: 300 * scale,
                   iconAsset: AppAssets.profileWatchListIcon,
                   label: 'Watch List',
-                  selected: _section == _ProfileSection.watchList,
-                  onTap: () => _selectSection(_ProfileSection.watchList),
+                  selected: _section == ProfileSection.watchList,
+                  onTap: () => _selectSection(ProfileSection.watchList),
                 ),
-                _ProfileShortcut(
+                ProfileShortcut(
                   scale: s,
                   centerX: 318 * scale,
                   top: 300 * scale,
                   iconAsset: AppAssets.profileHistoryIcon,
                   label: 'History',
-                  selected: _section == _ProfileSection.history,
-                  onTap: () => _selectSection(_ProfileSection.history),
+                  selected: _section == ProfileSection.history,
+                  onTap: () => _selectSection(ProfileSection.history),
                 ),
 
-                // Content area. The default state keeps the Figma popcorn art;
-                // tapping either shortcut switches to its own visible section.
+                // Content area switches between Watch List and History.
                 Positioned(
                   left: 16 * scale,
                   right: 16 * scale,
@@ -197,27 +196,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildSectionContent(double s) {
     switch (_section) {
-      case _ProfileSection.watchList:
-        return _ProfileList(
+      case ProfileSection.watchList:
+        return ProfileList(
           key: const ValueKey('watch-list'),
           scale: s,
           title: 'Watch List',
           badge: '12 saved',
           icon: Icons.bookmark,
           items: const [
-            _ListEntry(
+            ProfileListEntry(
               asset: AppAssets.homeCardCenter,
               title: 'Oppenheimer',
               subtitle: 'Drama · 3h 0m',
               trailingIcon: Icons.play_arrow,
             ),
-            _ListEntry(
+            ProfileListEntry(
               asset: AppAssets.homeCardLeft,
               title: 'Interstellar',
               subtitle: 'Sci-fi · 2h 49m',
               trailingIcon: Icons.play_arrow,
             ),
-            _ListEntry(
+            ProfileListEntry(
               asset: AppAssets.homeCardRight,
               title: 'The Dark Knight',
               subtitle: 'Action · 2h 32m',
@@ -225,27 +224,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         );
-      case _ProfileSection.history:
-        return _ProfileList(
+      case ProfileSection.history:
+        return ProfileList(
           key: const ValueKey('history'),
           scale: s,
           title: 'History',
           badge: '10 watched',
           icon: Icons.history,
           items: const [
-            _ListEntry(
+            ProfileListEntry(
               asset: AppAssets.homeActionCard1,
               title: 'Inception',
               subtitle: 'Watched today',
               trailingIcon: Icons.check,
             ),
-            _ListEntry(
+            ProfileListEntry(
               asset: AppAssets.homeActionCard2,
               title: 'Parasite',
               subtitle: 'Watched yesterday',
               trailingIcon: Icons.check,
             ),
-            _ListEntry(
+            ProfileListEntry(
               asset: AppAssets.homeActionCard3,
               title: 'Joker',
               subtitle: 'Watched 3 days ago',
@@ -253,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         );
-      case _ProfileSection.none:
+      case ProfileSection.none:
         return Center(
           key: const ValueKey('popcorn'),
           child: Image.asset(
@@ -264,280 +263,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
     }
-  }
-}
-
-/// Number + caption block. Both texts live in one narrow centred column, so
-/// there is no loose gap between the count and what it counts.
-class _ProfileStat extends StatelessWidget {
-  const _ProfileStat({
-    required this.scale,
-    required this.top,
-    required this.centerX,
-    required this.number,
-    required this.label,
-  });
-
-  final double scale;
-  final double top;
-  final double centerX;
-  final String number;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: centerX - 60 * scale,
-      top: top,
-      child: SizedBox(
-        width: 120 * scale,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              number,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.white,
-                fontFamily: 'Roboto',
-                fontSize: 30 * scale,
-                height: 1,
-              ),
-            ),
-            SizedBox(height: 4 * scale),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.white,
-                fontFamily: 'Roboto',
-                fontSize: 17 * scale,
-                height: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Tappable icon + caption pair. The active shortcut is highlighted in gold so
-/// it is obvious which section is being shown.
-class _ProfileShortcut extends StatelessWidget {
-  const _ProfileShortcut({
-    required this.scale,
-    required this.centerX,
-    required this.top,
-    required this.iconAsset,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final double scale;
-  final double centerX;
-  final double top;
-  final String iconAsset;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: centerX - 60 * scale,
-      top: top,
-      child: SizedBox(
-        width: 120 * scale,
-        height: 76 * scale,
-        child: Material(
-          color: selected ? const Color(0xFF2C2C2C) : Colors.transparent,
-          borderRadius: BorderRadius.circular(14 * scale),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(14 * scale),
-            // IntrinsicWidth hugs the content; Column's centre alignment then
-            // puts the icon box and the caption on the exact same centre line.
-            child: Center(
-              child: IntrinsicWidth(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 34 * scale,
-                      height: 34 * scale,
-                      child: Center(
-                        child: ColorFiltered(
-                          colorFilter: ColorFilter.mode(
-                            selected ? AppColors.accent : const Color(0xFF9A9A9A),
-                            BlendMode.srcIn,
-                          ),
-                          child: SvgPicture.asset(
-                            iconAsset,
-                            width: 30 * scale,
-                            height: 30 * scale,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 2 * scale),
-                    Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: selected ? AppColors.accent : AppColors.white,
-                        fontFamily: 'Roboto',
-                        fontSize: 20 * scale,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ListEntry {
-  const _ListEntry({
-    required this.asset,
-    required this.title,
-    required this.subtitle,
-    required this.trailingIcon,
-  });
-
-  final String asset;
-  final String title;
-  final String subtitle;
-  final IconData trailingIcon;
-}
-
-/// Visible content for the selected Watch List / History shortcut.
-class _ProfileList extends StatelessWidget {
-  const _ProfileList({
-    super.key,
-    required this.scale,
-    required this.title,
-    required this.badge,
-    required this.icon,
-    required this.items,
-  });
-
-  final double scale;
-  final String title;
-  final String badge;
-  final IconData icon;
-  final List<_ListEntry> items;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Icon(icon, color: AppColors.accent, size: 20 * scale),
-            SizedBox(width: 8 * scale),
-            Text(
-              title,
-              style: TextStyle(
-                color: AppColors.white,
-                fontFamily: 'Roboto',
-                fontSize: 22 * scale,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 10 * scale,
-                vertical: 5 * scale,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0x1AF6BD00),
-                borderRadius: BorderRadius.circular(20 * scale),
-              ),
-              child: Text(
-                badge,
-                style: TextStyle(color: AppColors.accent, fontSize: 12 * scale),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 14 * scale),
-        Expanded(
-          child: ListView.separated(
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (_, _) => SizedBox(height: 10 * scale),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return Container(
-                height: 72 * scale,
-                padding: EdgeInsets.all(8 * scale),
-                decoration: BoxDecoration(
-                  color: _cardBackground,
-                  borderRadius: BorderRadius.circular(12 * scale),
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8 * scale),
-                      child: Image.asset(
-                        item.asset,
-                        width: 52 * scale,
-                        height: 56 * scale,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    SizedBox(width: 12 * scale),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 15 * scale,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: 4 * scale),
-                          Text(
-                            item.subtitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: const Color(0xFFAAAAAA),
-                              fontSize: 12 * scale,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      item.trailingIcon,
-                      color: AppColors.accent,
-                      size: 22 * scale,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
   }
 }

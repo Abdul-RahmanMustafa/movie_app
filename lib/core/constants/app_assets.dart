@@ -4,6 +4,7 @@ abstract final class AppAssets {
   static const String branding = 'assets/images/branding.png';
 
   // Home screen dummy assets (Figma Home frame 47:1248).
+  // Attached "Group 7.png" overlay; byte-identical copy already in assets.
   static const String homeHeroGroup = 'assets/images/home/home_hero_group.png';
   static const String homeCardCenter = 'assets/images/home/home_card_center.png';
   static const String homeCardLeft = 'assets/images/home/home_card_left.png';
@@ -11,8 +12,9 @@ abstract final class AppAssets {
   static const String homeActionCard1 = 'assets/images/home/home_action_card_1.png';
   static const String homeActionCard2 = 'assets/images/home/home_action_card_2.png';
   static const String homeActionCard3 = 'assets/images/home/home_action_card_3.png';
+  // Attached 1917/Sam Mendes poster; byte-identical copy already in assets.
   static const String homePoster = 'assets/images/home/home_poster.png';
-  // Full-bleed hero background (supplied home_bg.png).
+  // Full-size 430x645 poster used as the second carousel slide.
   static const String homeBackground = 'assets/images/home/home_bg.png';
 
   // Profile screen assets (Figma frame 51:511).

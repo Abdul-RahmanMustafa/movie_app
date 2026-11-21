@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/auth_widgets.dart';
+import '../theme/auth_styles.dart';
+import '../utils/auth_validators.dart';
+import '../widgets/auth_button.dart';
+import '../widgets/auth_field.dart';
+import '../widgets/language_toggle.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
