@@ -1,6 +1,8 @@
 # movie_app
 Movie App - Route Graduation Project
 
+> Continuation notes and full handoff: [CONTINUATION.md](CONTINUATION.md)
+
 ## Home screen implementation notes
 
 The Home tab follows Figma `Movies (Copy)`, frame `47:1248`.
