@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/widgets/app_bottom_navigation_bar.dart';
+import '../../features/explore/presentation/screens/explore_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import 'widgets/placeholder_tab.dart';
@@ -25,7 +26,7 @@ class _MainShellState extends State<MainShell> {
   static const List<Widget> _pages = [
     HomeScreen(),
     PlaceholderTab(title: 'Search', icon: Icons.search),
-    PlaceholderTab(title: 'Explore', icon: Icons.explore_outlined),
+    ExploreScreen(),
     ProfileScreen(),
   ];
 
