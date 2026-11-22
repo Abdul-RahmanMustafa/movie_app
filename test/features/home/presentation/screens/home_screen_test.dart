@@ -7,9 +7,16 @@ import 'package:movie_app/features/home/presentation/widgets/home_hero.dart';
 import 'package:movie_app/features/home/presentation/widgets/movie_row.dart';
 import 'package:movie_app/features/home/presentation/widgets/section_heading.dart';
 
+import '../../../../helpers/fake_movies_controller.dart';
+
 void main() {
-  testWidgets('renders the home sections with a package carousel', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+  testWidgets('renders the home sections with a package carousel', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(home: HomeScreen(moviesController: FakeMoviesController())),
+    );
+    await tester.pump();
 
     expect(find.byType(HomeHero), findsOneWidget);
     expect(find.byType(HomeCarousel), findsOneWidget);
@@ -23,17 +30,19 @@ void main() {
     expect(find.byKey(const Key('home_hero_group')), findsOneWidget);
   });
 
-  testWidgets('keeps the hero full-bleed and Group 7 at its Figma size',
-      (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
-    final scale = MediaQuery.of(tester.element(find.byType(HomeScreen)))
-            .size
-            .width /
-        430;
+  testWidgets('keeps the hero full-bleed and Group 7 at its Figma size', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(home: HomeScreen(moviesController: FakeMoviesController())),
+    );
+    await tester.pump();
+    final scale =
+        MediaQuery.of(tester.element(find.byType(HomeScreen))).size.width / 430;
 
-    final topInset = MediaQuery.of(tester.element(find.byType(HomeHero)))
-        .padding
-        .top;
+    final topInset = MediaQuery.of(
+      tester.element(find.byType(HomeHero)),
+    ).padding.top;
     final hero = tester.renderObject<RenderBox>(find.byType(HomeHero));
     expect(hero.size.height, 640 * scale + topInset);
 
@@ -44,12 +53,15 @@ void main() {
     expect(group.size.height, 632 * scale);
   });
 
-  testWidgets('moves the active dot when the carousel auto-advances', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
-    final scale = MediaQuery.of(tester.element(find.byType(HomeScreen)))
-            .size
-            .width /
-        430;
+  testWidgets('moves the active dot when the carousel auto-advances', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(home: HomeScreen(moviesController: FakeMoviesController())),
+    );
+    await tester.pump();
+    final scale =
+        MediaQuery.of(tester.element(find.byType(HomeScreen))).size.width / 430;
 
     // The keyed render box includes the dot's 3*scale horizontal margins on
     // each side: active = (18 + 6)*scale, inactive = (6 + 6)*scale.

@@ -1,8 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../movies/domain/entities/movie.dart';
+import '../../../movies/presentation/widgets/movie_poster_image.dart';
 
 /// Carousel and page dots for the Home hero.
 ///
@@ -10,25 +11,28 @@ import '../../../../core/theme/app_colors.dart';
 /// the dots are rebuilt on a page change: rebuilding [CarouselSlider] would
 /// reset its internal [PageController] in carousel_slider 5.x.
 class HomeCarousel extends StatefulWidget {
-  const HomeCarousel({super.key, required this.scale});
+  const HomeCarousel({
+    super.key,
+    required this.scale,
+    required this.movies,
+    required this.isLoading,
+    required this.onRetry,
+    required this.onMovieTap,
+    this.errorMessage,
+  });
 
   final double scale;
+  final List<Movie> movies;
+  final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback onRetry;
+  final ValueChanged<Movie> onMovieTap;
 
   @override
   State<HomeCarousel> createState() => _HomeCarouselState();
 }
 
 class _HomeCarouselState extends State<HomeCarousel> {
-  // Dummy movie art from Figma Home frame 47:1248. Repeats are intentional for
-  // this UI-only pass.
-  static const List<String> _images = [
-    AppAssets.homeCardCenter,
-    AppAssets.homePoster,
-    AppAssets.homeCardLeft,
-    AppAssets.homeCardRight,
-    AppAssets.homeActionCard1,
-  ];
-
   final ValueNotifier<int> _currentPage = ValueNotifier<int>(0);
 
   @override
@@ -41,6 +45,23 @@ class _HomeCarouselState extends State<HomeCarousel> {
   Widget build(BuildContext context) {
     final scale = widget.scale;
 
+    if (widget.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.accent),
+      );
+    }
+    if (widget.errorMessage != null) {
+      return Center(
+        child: TextButton(
+          onPressed: widget.onRetry,
+          child: const Text('Try again'),
+        ),
+      );
+    }
+    if (widget.movies.isEmpty) {
+      return const Center(child: Text('No featured movies found.'));
+    }
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -51,7 +72,7 @@ class _HomeCarouselState extends State<HomeCarousel> {
           top: 110 * scale,
           height: 380 * scale,
           child: CarouselSlider.builder(
-            itemCount: _images.length,
+            itemCount: widget.movies.length,
             options: CarouselOptions(
               height: 380 * scale,
               viewportFraction: 0.82,
@@ -65,13 +86,16 @@ class _HomeCarouselState extends State<HomeCarousel> {
               onPageChanged: (index, _) => _currentPage.value = index,
             ),
             itemBuilder: (context, index, realIndex) {
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(18 * scale),
-                child: Image.asset(
-                  _images[index % _images.length],
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.fill,
+              final movie = widget.movies[index];
+              return GestureDetector(
+                key: Key('home_featured_movie_${movie.id}'),
+                onTap: () => widget.onMovieTap(movie),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18 * scale),
+                  child: MoviePosterImage(
+                    imageUrl: movie.largePosterUrl,
+                    fit: BoxFit.fill,
+                  ),
                 ),
               );
             },
@@ -88,7 +112,7 @@ class _HomeCarouselState extends State<HomeCarousel> {
             builder: (context, currentPage, _) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_images.length, (index) {
+                children: List.generate(widget.movies.length, (index) {
                   final isActive = index == currentPage;
                   return AnimatedContainer(
                     key: Key('home_carousel_dot_$index'),
