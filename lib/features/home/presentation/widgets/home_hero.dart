@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../movies/domain/entities/movie.dart';
 import 'home_carousel.dart';
 
 /// Figma Home hero (frame 47:1248).
@@ -9,9 +10,22 @@ import 'home_carousel.dart';
 /// behind the status bar. The carousel and the supplied Group 7 artwork are
 /// kept inside [SafeArea] so they never collide with the notch/camera hole.
 class HomeHero extends StatelessWidget {
-  const HomeHero({super.key, required this.scale});
+  const HomeHero({
+    super.key,
+    required this.scale,
+    required this.movies,
+    required this.isLoading,
+    required this.onRetry,
+    required this.onMovieTap,
+    this.errorMessage,
+  });
 
   final double scale;
+  final List<Movie> movies;
+  final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback onRetry;
+  final ValueChanged<Movie> onMovieTap;
 
   @override
   Widget build(BuildContext context) {
@@ -40,11 +54,7 @@ class HomeHero extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [
-                    Colors.black,
-                    Color(0x59000000),
-                    Colors.transparent,
-                  ],
+                  colors: [Colors.black, Color(0x59000000), Colors.transparent],
                   stops: [0.0, 0.72, 1.0],
                 ),
               ),
@@ -60,7 +70,16 @@ class HomeHero extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Positioned.fill(child: HomeCarousel(scale: scale)),
+                  Positioned.fill(
+                    child: HomeCarousel(
+                      scale: scale,
+                      movies: movies,
+                      isLoading: isLoading,
+                      errorMessage: errorMessage,
+                      onRetry: onRetry,
+                      onMovieTap: onMovieTap,
+                    ),
+                  ),
 
                   // Group 7 already contains the hero typography/button, so no
                   // hand-built Text/FilledButton is layered on top of it.

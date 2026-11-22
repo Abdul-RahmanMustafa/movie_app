@@ -38,6 +38,11 @@ dependencies:
   flutter_gen_runner: ^5.15.0
   flutter_svg: ^2.5.0
   carousel_slider: ^5.1.2
+  dio: ^5.11.1
+  firebase_core: ^4.15.2
+  firebase_auth: ^6.7.1
+  cloud_firestore: ^6.10.2
+  google_sign_in: ^7.2.0
 
 dev_dependencies:
   flutter_test:

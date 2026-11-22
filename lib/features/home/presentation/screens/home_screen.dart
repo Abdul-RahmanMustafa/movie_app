@@ -1,24 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_assets.dart';
+import '../../../movies/domain/entities/movie.dart';
+import '../../../movies/domain/entities/movie_list_query.dart';
+import '../../../movies/domain/movie_failure.dart';
+import '../../../movies/presentation/providers/movies_controller.dart';
 import '../widgets/home_hero.dart';
 import '../widgets/movie_row.dart';
 import '../widgets/section_heading.dart';
 
 /// Figma Home frame 47:1248, rebuilt as a real scrollable page.
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key, this.moviesController, this.onExploreRequested});
 
-  // Dummy movie art for the horizontal "Action" row. Repeats are intentional
-  // for this UI-only pass.
-  static const List<String> _movieImages = [
-    AppAssets.homeActionCard1,
-    AppAssets.homeActionCard2,
-    AppAssets.homeActionCard3,
-    AppAssets.homeCardCenter,
-    AppAssets.homePoster,
-    AppAssets.homeActionCard2,
-  ];
+  final MoviesController? moviesController;
+  final VoidCallback? onExploreRequested;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final MoviesController _moviesController =
+      widget.moviesController ?? MoviesDependencies.controller;
+
+  List<Movie> _featuredMovies = const [];
+  List<Movie> _actionMovies = const [];
+  String? _errorMessage;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMovies();
+  }
+
+  Future<void> _loadMovies() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final pages = await Future.wait([
+        _moviesController.listMovies(
+          const MovieListQuery(
+            limit: 5,
+            minimumRating: 7,
+            sortBy: MovieSortBy.rating,
+          ),
+        ),
+        _moviesController.listMovies(
+          const MovieListQuery(
+            limit: 12,
+            genre: 'Action',
+            minimumRating: 6,
+            sortBy: MovieSortBy.rating,
+          ),
+        ),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _featuredMovies = pages[0].movies;
+        _actionMovies = pages[1].movies;
+        _isLoading = false;
+      });
+    } on MovieFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = failure.message;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Something went wrong while loading movies.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _openMovie(Movie movie) => context.push('/movie/${movie.id}');
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +95,45 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              HomeHero(scale: scale),
-              SectionHeading(scale: scale),
+              HomeHero(
+                scale: scale,
+                movies: _featuredMovies,
+                isLoading: _isLoading,
+                errorMessage: _errorMessage,
+                onRetry: _loadMovies,
+                onMovieTap: _openMovie,
+              ),
+              SectionHeading(
+                scale: scale,
+                onSeeMore: widget.onExploreRequested,
+              ),
               SizedBox(height: 12 * scale),
-              MovieRow(images: _movieImages, scale: scale),
+              if (_isLoading)
+                SizedBox(
+                  height: 220 * scale,
+                  child: const Center(child: CircularProgressIndicator()),
+                )
+              else if (_errorMessage != null)
+                SizedBox(
+                  height: 220 * scale,
+                  child: Center(
+                    child: TextButton(
+                      onPressed: _loadMovies,
+                      child: const Text('Try again'),
+                    ),
+                  ),
+                )
+              else if (_actionMovies.isEmpty)
+                SizedBox(
+                  height: 220 * scale,
+                  child: const Center(child: Text('No Action movies found.')),
+                )
+              else
+                MovieRow(
+                  movies: _actionMovies,
+                  scale: scale,
+                  onMovieTap: _openMovie,
+                ),
 
               // Extra space so the last card is not hidden behind the nav bar.
               SizedBox(height: 96 * scale),
