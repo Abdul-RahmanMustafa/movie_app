@@ -1,267 +1,442 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/layout/app_layout.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../profile_section.dart';
+import '../../../authentication/domain/auth_failure.dart';
+import '../../../authentication/presentation/providers/auth_controller.dart';
+import '../../../movies/domain/entities/movie.dart';
+import '../../../watchlist/domain/watchlist_failure.dart';
+import '../../../watchlist/presentation/providers/watchlist_controller.dart';
+import '../../domain/entities/user_profile.dart';
+import '../../domain/profile_failure.dart';
 import '../models/profile_list_entry.dart';
+import '../profile_section.dart';
+import '../providers/profile_controller.dart';
+import '../widgets/profile_avatar.dart';
 import '../widgets/profile_list.dart';
-import '../widgets/profile_shortcut.dart';
 import '../widgets/profile_stat.dart';
 
-/// Profile screen from Figma frame `51:511` (430 × 932).
-///
-/// Widget helpers live in their own files under `../widgets`; this file only
-/// owns the screen and its private state. The shared bottom navigation is
-/// drawn by `MainShell`, so the frame's own nav bar is not duplicated here.
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({
+    super.key,
+    this.watchlistController,
+    this.profileController,
+    this.authController,
+    this.autoLoadData = true,
+  });
+
+  final WatchlistController? watchlistController;
+  final ProfileController? profileController;
+  final AuthController? authController;
+  final bool autoLoadData;
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  // Figma "Rectangle 18" fill (#212121), the lighter top panel of the frame.
+class ProfileScreenState extends State<ProfileScreen> {
   static const Color _panelBackground = Color(0xFF212121);
+  static const Color _danger = Color(0xFFE53935);
 
-  // Slight reduction applied to all sizes for a tidier, less crowded layout.
-  static const double _compact = 0.9;
+  late final WatchlistController _watchlistController =
+      widget.watchlistController ?? WatchlistDependencies.controller;
+  late final ProfileController _profileController =
+      widget.profileController ?? ProfileDependencies.controller;
+  late final AuthController _authController =
+      widget.authController ?? AuthController.firebase();
 
-  // Watch List is selected by default so its content is visible immediately.
+  StreamSubscription<List<Movie>>? _watchlistSubscription;
+  StreamSubscription<UserProfile>? _profileSubscription;
+  List<Movie> _watchlist = const [];
+  UserProfile? _profile;
   ProfileSection _section = ProfileSection.watchList;
-  String _name = 'John Safwat';
+  String? _watchlistError;
+  String? _profileError;
+  bool _watchlistLoading = true;
+  bool _profileLoading = true;
+  bool _dataStarted = false;
+  bool _isSigningOut = false;
 
-  Future<void> _openEditProfile() async {
-    final editedName = await context.push<String>('/edit-profile');
-    if (!mounted || editedName == null || editedName.trim().isEmpty) return;
-    setState(() => _name = editedName.trim());
-  }
-
-  void _selectSection(ProfileSection section) {
-    setState(() => _section = section);
+  @override
+  void initState() {
+    super.initState();
+    if (widget.autoLoadData) refreshProfile();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final scale = constraints.maxWidth / 430;
-        // All sizes use `s`; Figma positions stay on the original `scale`.
-        final s = scale * _compact;
+  void dispose() {
+    unawaited(_watchlistSubscription?.cancel());
+    unawaited(_profileSubscription?.cancel());
+    super.dispose();
+  }
 
-        return SingleChildScrollView(
-          child: SizedBox(
-            height: 900 * scale,
-            child: Stack(
-              children: [
-                // Top panel: 430 × 389 at (0, 0), fill #212121.
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  width: 430 * scale,
-                  height: 389 * scale,
-                  child: Container(color: _panelBackground),
-                ),
+  void refreshProfile({bool force = false}) {
+    if (_dataStarted && !force) return;
+    _dataStarted = true;
+    _observeProfile();
+    _observeWatchlist();
+  }
 
-                // Profile picture: measured 118 × 118 at (24, 52).
-                Positioned(
-                  left: 24 * scale,
-                  top: 52 * scale,
-                  child: ClipOval(
-                    child: Image.asset(
-                      AppAssets.profilePfp,
-                      width: 118 * s,
-                      height: 118 * s,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-
-                // Counters. Each number and caption are one compact, centred
-                // column so `12 / Wish List` and `10 / History` read as a pair.
-                ProfileStat(
-                  scale: s,
-                  top: 84 * scale,
-                  centerX: 238 * scale,
-                  number: '12',
-                  label: 'Wish List',
-                ),
-                ProfileStat(
-                  scale: s,
-                  top: 84 * scale,
-                  centerX: 364 * scale,
-                  number: '10',
-                  label: 'History',
-                ),
-
-                // User name centred on the same axis as the profile picture.
-                Positioned(
-                  left: 24 * scale,
-                  top: 178 * scale,
-                  width: 118 * s,
-                  child: Text(
-                    _name,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontFamily: 'Roboto',
-                      fontSize: 18 * s,
-                      height: 1,
-                    ),
-                  ),
-                ),
-
-                // "Button" layer: measured 398 × 56 at (16, 232). Centred
-                // horizontally so both margins match.
-                Positioned(
-                  left: (430 * scale - 398 * s) / 2,
-                  top: 232 * scale,
-                  child: SizedBox(
-                    width: 398 * s,
-                    height: 56 * s,
-                    child: OutlinedButton(
-                      onPressed: _openEditProfile,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.white,
-                        side: BorderSide(
-                          color: AppColors.accent,
-                          width: 1.2 * s,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12 * s),
-                        ),
-                      ),
-                      child: Text(
-                        'Edit Profile',
-                        style: TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 18 * s,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Gold divider ("Line 1"): measured 215 × 1 at (0, 388).
-                Positioned(
-                  left: 0,
-                  top: 388 * scale,
-                  width: 215 * s,
-                  height: 1 * scale,
-                  child: Container(color: AppColors.accent),
-                ),
-
-                // Shortcut buttons. Each pair shares a centre X, so the icon
-                // sits directly above its caption and both groups are balanced.
-                ProfileShortcut(
-                  scale: s,
-                  centerX: 112 * scale,
-                  top: 300 * scale,
-                  iconAsset: AppAssets.profileWatchListIcon,
-                  label: 'Watch List',
-                  selected: _section == ProfileSection.watchList,
-                  onTap: () => _selectSection(ProfileSection.watchList),
-                ),
-                ProfileShortcut(
-                  scale: s,
-                  centerX: 318 * scale,
-                  top: 300 * scale,
-                  iconAsset: AppAssets.profileHistoryIcon,
-                  label: 'History',
-                  selected: _section == ProfileSection.history,
-                  onTap: () => _selectSection(ProfileSection.history),
-                ),
-
-                // Content area switches between Watch List and History.
-                Positioned(
-                  left: 16 * scale,
-                  right: 16 * scale,
-                  top: 410 * scale,
-                  bottom: 96 * scale,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    child: _buildSectionContent(s),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+  void _observeProfile() {
+    unawaited(_profileSubscription?.cancel());
+    setState(() {
+      _profileLoading = true;
+      _profileError = null;
+    });
+    _profileSubscription = _profileController.observeProfile().listen(
+      (profile) {
+        if (!mounted) return;
+        setState(() {
+          _profile = profile;
+          _profileLoading = false;
+          _profileError = null;
+        });
+      },
+      onError: (Object error) {
+        if (!mounted) return;
+        setState(() {
+          _profileLoading = false;
+          _profileError = error is ProfileFailure
+              ? error.message
+              : 'Something went wrong while loading your profile.';
+        });
       },
     );
   }
 
-  Widget _buildSectionContent(double s) {
+  void _observeWatchlist() {
+    unawaited(_watchlistSubscription?.cancel());
+    setState(() {
+      _watchlistLoading = true;
+      _watchlistError = null;
+    });
+    _watchlistSubscription = _watchlistController.observeWatchlist().listen(
+      (movies) {
+        if (!mounted) return;
+        setState(() {
+          _watchlist = movies;
+          _watchlistLoading = false;
+          _watchlistError = null;
+        });
+      },
+      onError: (Object error) {
+        if (!mounted) return;
+        setState(() {
+          _watchlistLoading = false;
+          _watchlistError = error is WatchlistFailure
+              ? error.message
+              : 'Something went wrong while loading your Watch List.';
+        });
+      },
+    );
+  }
+
+  Future<void> _openEditProfile() async {
+    await context.push<bool>('/edit-profile');
+  }
+
+  Future<void> _signOut() async {
+    if (_isSigningOut) return;
+    setState(() => _isSigningOut = true);
+    try {
+      await _authController.signOut();
+      if (!mounted) return;
+      context.go('/login');
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      _showMessage(failure.message);
+    } catch (_) {
+      if (!mounted) return;
+      _showMessage('Could not sign out safely. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isSigningOut = false);
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final scale = AppLayout.scaleForWidth(constraints.maxWidth);
+          return Column(
+            children: [
+              _buildHeader(scale),
+              _buildTabs(scale),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    16 * scale,
+                    14 * scale,
+                    16 * scale,
+                    82 * scale + MediaQuery.paddingOf(context).bottom,
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    child: _buildSectionContent(scale),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeader(double scale) {
+    final profile = _profile;
+    return Container(
+      color: _panelBackground,
+      padding: EdgeInsets.fromLTRB(
+        20 * scale,
+        22 * scale,
+        20 * scale,
+        14 * scale,
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 116 * scale,
+                child: Column(
+                  children: [
+                    if (_profileLoading)
+                      SizedBox(
+                        width: 82 * scale,
+                        height: 82 * scale,
+                        child: const CircularProgressIndicator(
+                          color: AppColors.accent,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    else
+                      ProfileAvatar(
+                        avatarIndex: profile?.avatarIndex ?? 0,
+                        size: 82 * scale,
+                      ),
+                    SizedBox(height: 8 * scale),
+                    Text(
+                      profile?.name.isNotEmpty == true ? profile!.name : '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 15 * scale,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              ProfileStat(
+                scale: scale,
+                top: 0,
+                centerX: 0,
+                number: '${_watchlist.length}',
+                label: 'Watch List',
+                positioned: false,
+              ),
+              SizedBox(width: 30 * scale),
+              ProfileStat(
+                scale: scale,
+                top: 0,
+                centerX: 0,
+                number: '0',
+                label: 'History',
+                positioned: false,
+              ),
+              SizedBox(width: 8 * scale),
+            ],
+          ),
+          if (_profileError != null) ...[
+            SizedBox(height: 6 * scale),
+            TextButton(
+              onPressed: _observeProfile,
+              child: Text(
+                _profileError!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.accent),
+              ),
+            ),
+          ],
+          SizedBox(height: 12 * scale),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: SizedBox(
+                  height: 48 * scale,
+                  child: ElevatedButton(
+                    onPressed: _profileLoading ? null : _openEditProfile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: AppColors.background,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12 * scale),
+                      ),
+                    ),
+                    child: const Text('Edit Profile'),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10 * scale),
+              Expanded(
+                child: SizedBox(
+                  height: 48 * scale,
+                  child: ElevatedButton.icon(
+                    onPressed: _isSigningOut ? null : _signOut,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _danger,
+                      foregroundColor: AppColors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12 * scale),
+                      ),
+                    ),
+                    icon: _isSigningOut
+                        ? SizedBox(
+                            width: 16 * scale,
+                            height: 16 * scale,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.white,
+                            ),
+                          )
+                        : Icon(Icons.logout, size: 18 * scale),
+                    label: Text(_isSigningOut ? '' : 'Exit'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabs(double scale) {
+    return Container(
+      color: _panelBackground,
+      height: 72 * scale,
+      child: Row(
+        children: [
+          _profileTab(
+            scale: scale,
+            section: ProfileSection.watchList,
+            icon: Icons.list,
+            label: 'Watch List',
+          ),
+          _profileTab(
+            scale: scale,
+            section: ProfileSection.history,
+            icon: Icons.folder,
+            label: 'History',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _profileTab({
+    required double scale,
+    required ProfileSection section,
+    required IconData icon,
+    required String label,
+  }) {
+    final selected = _section == section;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _section = section),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selected ? AppColors.accent : Colors.transparent,
+                width: 2.5 * scale,
+              ),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: selected ? AppColors.accent : AppColors.white,
+                size: 24 * scale,
+              ),
+              SizedBox(height: 4 * scale),
+              Text(
+                label,
+                style: TextStyle(color: AppColors.white, fontSize: 14 * scale),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionContent(double scale) {
     switch (_section) {
       case ProfileSection.watchList:
         return ProfileList(
           key: const ValueKey('watch-list'),
-          scale: s,
+          scale: scale,
           title: 'Watch List',
-          badge: '12 saved',
+          badge: '${_watchlist.length} saved',
           icon: Icons.bookmark,
-          items: const [
-            ProfileListEntry(
-              asset: AppAssets.homeCardCenter,
-              title: 'Oppenheimer',
-              subtitle: 'Drama · 3h 0m',
-              trailingIcon: Icons.play_arrow,
-            ),
-            ProfileListEntry(
-              asset: AppAssets.homeCardLeft,
-              title: 'Interstellar',
-              subtitle: 'Sci-fi · 2h 49m',
-              trailingIcon: Icons.play_arrow,
-            ),
-            ProfileListEntry(
-              asset: AppAssets.homeCardRight,
-              title: 'The Dark Knight',
-              subtitle: 'Action · 2h 32m',
-              trailingIcon: Icons.play_arrow,
-            ),
-          ],
+          emptyMessage: '',
+          emptyAsset: AppAssets.profilePopcorn,
+          showHeader: false,
+          items: _watchlist.map(_watchlistEntry).toList(growable: false),
+          isLoading: _watchlistLoading,
+          errorMessage: _watchlistError,
+          onRetry: _observeWatchlist,
+          onItemTap: (entry) => context.push('/movie/${entry.movieId}'),
         );
       case ProfileSection.history:
         return ProfileList(
           key: const ValueKey('history'),
-          scale: s,
+          scale: scale,
           title: 'History',
-          badge: '10 watched',
+          badge: '0 watched',
           icon: Icons.history,
-          items: const [
-            ProfileListEntry(
-              asset: AppAssets.homeActionCard1,
-              title: 'Inception',
-              subtitle: 'Watched today',
-              trailingIcon: Icons.check,
-            ),
-            ProfileListEntry(
-              asset: AppAssets.homeActionCard2,
-              title: 'Parasite',
-              subtitle: 'Watched yesterday',
-              trailingIcon: Icons.check,
-            ),
-            ProfileListEntry(
-              asset: AppAssets.homeActionCard3,
-              title: 'Joker',
-              subtitle: 'Watched 3 days ago',
-              trailingIcon: Icons.check,
-            ),
-          ],
+          emptyMessage: '',
+          emptyAsset: AppAssets.profilePopcorn,
+          showHeader: false,
+          items: const [],
         );
       case ProfileSection.none:
-        return Center(
-          key: const ValueKey('popcorn'),
-          child: Image.asset(
-            AppAssets.profilePopcorn,
-            width: 124 * s,
-            height: 124 * s,
-            fit: BoxFit.contain,
-          ),
-        );
+        return const SizedBox.shrink(key: ValueKey('empty-profile-section'));
     }
+  }
+
+  ProfileListEntry _watchlistEntry(Movie movie) {
+    final details = <String>[
+      if (movie.year > 0) '${movie.year}',
+      if (movie.rating > 0) 'IMDb ${movie.rating.toStringAsFixed(1)}',
+    ];
+    return ProfileListEntry(
+      movieId: movie.id,
+      posterUrl: movie.mediumPosterUrl,
+      title: movie.title,
+      subtitle: details.join('  •  '),
+      trailingIcon: Icons.chevron_right,
+    );
   }
 }

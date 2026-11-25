@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../constants/app_assets.dart';
+import '../layout/app_layout.dart';
 import '../theme/app_colors.dart';
 
 /// Figma Home frame `47:1248` bottom navigation bar.
@@ -30,10 +31,17 @@ class AppBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Match the 430px Figma design width on any device.
-        final scale = constraints.maxWidth / 430;
+        // Match the 430px Figma design width, clamped on very small/large
+        // screens. The bottom inset keeps the bar above gesture navigation.
+        final scale = AppLayout.scaleForWidth(constraints.maxWidth);
+        final bottomInset = MediaQuery.paddingOf(context).bottom;
         return Padding(
-          padding: EdgeInsets.fromLTRB(9 * scale, 0, 8 * scale, 9 * scale),
+          padding: EdgeInsets.fromLTRB(
+            9 * scale,
+            0,
+            8 * scale,
+            9 * scale + bottomInset,
+          ),
           child: SizedBox(
             height: 61 * scale,
             child: DecoratedBox(

@@ -4,9 +4,20 @@ import 'package:movie_app/features/explore/presentation/screens/explore_screen.d
 import 'package:movie_app/features/explore/presentation/widgets/explore_genre_chip.dart';
 import 'package:movie_app/features/explore/presentation/widgets/explore_movie_card.dart';
 
+import '../../../../helpers/fake_movies_controller.dart';
+import '../../../../helpers/test_surface.dart';
+
 void main() {
-  testWidgets('renders the Figma Browse placeholders', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: ExploreScreen()));
+  testWidgets('renders API-backed movies in the Figma Browse grid', (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ExploreScreen(moviesController: FakeMoviesController()),
+      ),
+    );
+    await tester.pump();
 
     // Figma "Browse" frame genre groups. The list scrolls horizontally, so
     // only the first three chips are built in the default test viewport.
@@ -16,24 +27,30 @@ void main() {
     expect(find.text('Animation'), findsOneWidget);
 
     final genreList = find.byWidgetPredicate(
-      (widget) => widget is ListView && widget.scrollDirection == Axis.horizontal,
+      (widget) =>
+          widget is ListView && widget.scrollDirection == Axis.horizontal,
     );
     await tester.drag(genreList, const Offset(-1000, 0));
     await tester.pumpAndSettle();
     expect(find.text('Biography'), findsOneWidget);
 
-    // Figma 2 x 2 poster grid; each card exposes its DB slots by key.
+    // Figma 2 x 2 poster grid now contains real entity values.
     expect(find.byType(ExploreMovieCard), findsNWidgets(4));
     for (final index in [0, 1, 2, 3]) {
       expect(find.byKey(Key('explore_movie_slot_$index')), findsOneWidget);
       expect(find.byKey(Key('explore_rating_slot_$index')), findsOneWidget);
     }
-    expect(find.text('Poster slot'), findsNWidgets(4));
-    expect(find.text('DB: posterUrl'), findsNWidgets(4));
+    expect(find.text('First Movie'), findsOneWidget);
+    expect(find.text('8.1'), findsOneWidget);
   });
 
   testWidgets('top genre buttons move the selected highlight', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: ExploreScreen()));
+    usePhoneSurface(tester);
+    final controller = FakeMoviesController();
+    await tester.pumpWidget(
+      MaterialApp(home: ExploreScreen(moviesController: controller)),
+    );
+    await tester.pump();
 
     ExploreGenreChip chipAt(int index) => tester.widget<ExploreGenreChip>(
       find.byKey(Key('explore_genre_slot_$index')),
@@ -48,6 +65,7 @@ void main() {
 
     expect(chipAt(0).selected, isFalse);
     expect(chipAt(1).selected, isTrue);
+    expect(controller.queries.last.genre, 'Adventure');
 
     await tester.tap(find.byKey(Key('explore_genre_slot_0')));
     await tester.pump();
