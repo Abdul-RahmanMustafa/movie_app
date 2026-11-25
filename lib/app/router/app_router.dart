@@ -8,13 +8,9 @@ import '../../features/authentication/presentation/screens/auth_loading_screen.d
 import '../../features/authentication/presentation/screens/forgot_password_screen.dart';
 import '../../features/authentication/presentation/screens/login_screen.dart';
 import '../../features/authentication/presentation/screens/register_screen.dart';
-<<<<<<< HEAD
 import '../../features/authentication/presentation/utils/auth_navigation.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/movies/presentation/screens/movie_details_screen.dart';
-=======
-import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
->>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 
 abstract final class AppRouter {
@@ -23,7 +19,6 @@ abstract final class AppRouter {
   );
 
   static final GoRouter router = GoRouter(
-<<<<<<< HEAD
     initialLocation: '/home',
     refreshListenable: _authSession,
     redirect: _redirect,
@@ -42,34 +37,17 @@ abstract final class AppRouter {
             initialEmail: initialEmail is String ? initialEmail : '',
           );
         },
-=======
-    initialLocation: '/',
-    routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
->>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
       ),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-<<<<<<< HEAD
       GoRoute(path: '/home', builder: (context, state) => const MainShell()),
       GoRoute(
         path: '/movie/:movieId',
         builder: (context, state) => MovieDetailsScreen(
           movieId: int.tryParse(state.pathParameters['movieId'] ?? '') ?? 0,
         ),
-=======
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const MainShell(),
->>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
       ),
       GoRoute(
         path: '/edit-profile',
@@ -77,7 +55,6 @@ abstract final class AppRouter {
       ),
     ],
   );
-<<<<<<< HEAD
 
   static String? _redirect(BuildContext _, GoRouterState state) {
     // TEMP_QA_BYPASS: remove after device verification.
@@ -139,6 +116,3 @@ abstract final class AppRouter {
     return null;
   }
 }
-=======
-}
->>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
