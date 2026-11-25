@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -75,27 +79,42 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Stack(
       fit: StackFit.expand,
       children: [
+<<<<<<< HEAD
         Image.asset(imagePath, fit: BoxFit.cover),
+=======
+        Image.asset(
+          imagePath,
+          fit: BoxFit.cover,
+        ),
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
 
         if (pageIndex == 1)
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
+<<<<<<< HEAD
             child: ConstrainedBox(
               constraints: BoxConstraints(maxHeight: screenHeight * 0.62),
               child: _buildSecondPage(1),
             ),
+=======
+            child: _buildSecondPage(1),
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
           )
         else if (pageIndex >= 2 && pageIndex <= 5)
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
+<<<<<<< HEAD
             child: ConstrainedBox(
               constraints: BoxConstraints(maxHeight: screenHeight * 0.62),
               child: _buildSecondPage(pageIndex),
             ),
+=======
+            child: _buildSecondPage(pageIndex),
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
           )
         else
           Positioned(
@@ -124,7 +143,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const SizedBox(height: 12),
         const Text(
           'Get access to a huge library of movies '
+<<<<<<< HEAD
           'to suit all tastes. You will surely like it.',
+=======
+              'to suit all tastes. You will surely like it.',
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: 'Inter',
@@ -140,6 +163,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
   Widget _buildSecondPage(int pageIndex) {
     final titles = {
       1: 'Discover Movies',
@@ -150,6 +178,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     };
 
     final descriptions = {
+<<<<<<< HEAD
       1:
           'Explore a vast collection of movies in all qualities and genres. '
           'Find your next favorite film with ease.',
@@ -161,12 +190,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           'Enjoy films in various qualities and genres.',
       4:
           'Share your thoughts on the movies you\'ve watched. '
+=======
+      1: 'Explore a vast collection of movies in all qualities and genres. '
+          'Find your next favorite film with ease.',
+      2: 'Discover movies from every genre, in all available qualities. '
+          'Find something new and exciting to watch every day.',
+      3: 'Save movies to your watchlist to keep track of what you want to watch next. '
+          'Enjoy films in various qualities and genres.',
+      4: 'Share your thoughts on the movies you\'ve watched. '
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
           'Dive deep into film details and help others discover great movies '
           'with your reviews.',
     };
 
     return Container(
       width: double.infinity,
+<<<<<<< HEAD
+=======
+      padding: const EdgeInsets.symmetric(
+        horizontal: 24,
+        vertical: 24,
+      ),
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
       decoration: const BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.only(
@@ -174,6 +219,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           topRight: Radius.circular(40),
         ),
       ),
+<<<<<<< HEAD
       // Short screens scroll the sheet instead of overflowing it.
       child: SafeArea(
         top: false,
@@ -210,10 +256,46 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ],
           ),
         ),
+=======
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            titles[pageIndex]!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          if (pageIndex != 5) ...[
+            const SizedBox(height: 12),
+            Text(
+              descriptions[pageIndex]!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
+          _buildButtons(pageIndex),
+        ],
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
       ),
     );
   }
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
   Widget _buildButtons(int pageIndex) {
     final buttonText = switch (pageIndex) {
       0 => 'Explore Now',
@@ -279,7 +361,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         style: OutlinedButton.styleFrom(
           backgroundColor: AppColors.background,
           foregroundColor: AppColors.primary,
+<<<<<<< HEAD
           side: const BorderSide(color: AppColors.primary),
+=======
+          side: const BorderSide(
+            color: AppColors.primary,
+          ),
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),

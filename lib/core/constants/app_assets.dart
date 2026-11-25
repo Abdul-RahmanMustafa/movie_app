@@ -13,8 +13,20 @@ abstract final class AppAssets {
   static const String onboarding5 = 'assets/images/onBoarding5.png';
   static const String onboarding6 = 'assets/images/onBoarding6.png';
 
+<<<<<<< HEAD
   // Home screen decorative assets
   static const String homeHeroGroup = 'assets/images/home/home_hero_group.png';
+=======
+  // Home screen dummy assets
+  static const String homeHeroGroup = 'assets/images/home/home_hero_group.png';
+  static const String homeCardCenter = 'assets/images/home/home_card_center.png';
+  static const String homeCardLeft = 'assets/images/home/home_card_left.png';
+  static const String homeCardRight = 'assets/images/home/home_card_right.png';
+  static const String homeActionCard1 = 'assets/images/home/home_action_card_1.png';
+  static const String homeActionCard2 = 'assets/images/home/home_action_card_2.png';
+  static const String homeActionCard3 = 'assets/images/home/home_action_card_3.png';
+  static const String homePoster = 'assets/images/home/home_poster.png';
+>>>>>>> e72bab2b8ec083794f9af7324a5799104188d4b6
   static const String homeBackground = 'assets/images/home/home_bg.png';
 
   // Profile screen assets
