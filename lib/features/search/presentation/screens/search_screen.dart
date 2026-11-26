@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/layout/app_layout.dart';
 import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../explore/presentation/widgets/explore_movie_card.dart';
@@ -25,7 +26,6 @@ class _SearchScreenState extends State<SearchScreen> {
   late final MoviesController _moviesController =
       widget.moviesController ?? MoviesDependencies.controller;
   final TextEditingController _searchController = TextEditingController();
-  bool _isSearchFocused = false;
 
   Timer? _debounce;
   List<Movie> _movies = const [];
@@ -110,8 +110,11 @@ class _SearchScreenState extends State<SearchScreen> {
         bottom: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final scale = constraints.maxWidth / 430;
-
+            final scale = AppLayout.scaleForWidth(constraints.maxWidth);
+            final bottomPadding = AppLayout.bottomContentPadding(
+              context,
+              scale,
+            );
             return CustomScrollView(
               slivers: [
                 SliverPadding(
@@ -122,71 +125,48 @@ class _SearchScreenState extends State<SearchScreen> {
                     20 * scale,
                   ),
                   sliver: SliverToBoxAdapter(
-                    child: Focus(
-                      onFocusChange: (hasFocus) {
-                        if (_isSearchFocused != hasFocus) {
-                          setState(() {
-                            _isSearchFocused = hasFocus;
-                          });
-                        }
-                      },
-                      child: TextField(
-                        key: const Key('movie_search_field'),
-                        controller: _searchController,
-                        onChanged: _onQueryChanged,
-                        textInputAction: TextInputAction.search,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontFamily: 'Roboto',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                    child: TextField(
+                      key: const Key('movie_search_field'),
+                      controller: _searchController,
+                      onChanged: _onQueryChanged,
+                      textInputAction: TextInputAction.search,
+                      style: const TextStyle(color: AppColors.white),
+                      decoration: InputDecoration(
+                        hintText: context.l10n.searchMovies,
+                        hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: AppColors.accent,
                         ),
-                        decoration: InputDecoration(
-                          hintText: context.l10n.searchMovies,
-                          hintStyle: const TextStyle(
-                            color: Color(0xFFAAAAAA),
-                            fontFamily: 'Roboto',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Image.asset(
-                              'assets/images/home/ic_vector.png',
-                              color: _isSearchFocused
-                                  ? AppColors.accent
-                                  : AppColors.white,
-                              width: 24,
-                              height: 24,
-                            ),
-                          ),
-                          suffixIcon: _searchController.text.isEmpty
-                              ? null
-                              : IconButton(
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    _onQueryChanged('');
-                                  },
-                                  icon: const Icon(Icons.close),
-                                ),
-                          filled: true,
-                          fillColor: AppColors.surface,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12 * scale),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12 * scale),
-                            borderSide: const BorderSide(
-                              color: AppColors.accent,
-                            ),
-                          ),
+                        suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _searchController,
+                          builder: (context, value, _) {
+                            if (value.text.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return IconButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                _onQueryChanged('');
+                              },
+                              icon: const Icon(Icons.close),
+                            );
+                          },
+                        ),
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12 * scale),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12 * scale),
+                          borderSide: const BorderSide(color: AppColors.accent),
                         ),
                       ),
                     ),
                   ),
                 ),
-
                 if (_isLoading)
                   const SliverFillRemaining(
                     hasScrollBody: false,
@@ -219,14 +199,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 else if (_activeQuery.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
-                    child: Center(
-                      child: Image.asset(
-                        'assets/images/profile/profile_popcorn.png',
-                        width: 124 * scale,
-                        height: 124 * scale,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
+                    child: Center(child: Text(context.l10n.searchMovies)),
                   )
                 else if (_movies.isEmpty)
                   SliverFillRemaining(
@@ -241,7 +214,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       16 * scale,
                       0,
                       16 * scale,
-                      96 * scale,
+                      bottomPadding,
                     ),
                     sliver: SliverGrid.builder(
                       itemCount: _movies.length,
@@ -253,7 +226,6 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       itemBuilder: (context, index) {
                         final movie = _movies[index];
-
                         return ExploreMovieCard(
                           key: Key('search_movie_${movie.id}'),
                           movie: movie,

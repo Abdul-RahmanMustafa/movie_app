@@ -68,6 +68,24 @@ fingerprint is needed while everyone uses this exact shared keystore.
 This development certificate must never be reused for Play Store or other
 production signing.
 
+## Performance and responsive layout
+
+- `AppLayout` provides shared, clamped scaling for the 430px Figma frames and
+  reserves space for system gesture insets.
+- Main tabs are created on first visit and retained afterwards. Hidden tabs
+  disable tickers so the Home carousel does not animate off-screen.
+- Home, Explore, and Search support responsive content padding; Home and
+  Explore also support pull-to-refresh.
+- YTS list, details, and suggestion results use a short in-memory cache to
+  avoid duplicate requests during tab switches and movie-detail revisits.
+- Poster decoding is capped to the rendered width to reduce memory pressure.
+- System text scaling is bounded to keep fixed-frame layouts readable without
+  disabling accessibility scaling.
+
+Responsive widget coverage lives in
+`test/responsive/screens_responsive_test.dart` and exercises compact phones,
+tablets, landscape layouts, and increased text scale.
+
 ## Home screen implementation notes
 
 The Home tab follows Figma `Movies (Copy)`, frame `47:1248`.

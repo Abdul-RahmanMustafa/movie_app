@@ -45,6 +45,9 @@ class _HomeCarouselState extends State<HomeCarousel> {
   @override
   Widget build(BuildContext context) {
     final scale = widget.scale;
+    // MainShell disables tickers for hidden tabs, so the carousel must not
+    // keep auto-playing (and scheduling frames) off screen.
+    final tickerEnabled = TickerMode.valuesOf(context).enabled;
 
     if (widget.isLoading) {
       return const Center(
@@ -77,7 +80,7 @@ class _HomeCarouselState extends State<HomeCarousel> {
             options: CarouselOptions(
               height: 380 * scale,
               viewportFraction: 0.82,
-              autoPlay: true,
+              autoPlay: tickerEnabled,
               autoPlayInterval: const Duration(seconds: 3),
               autoPlayAnimationDuration: const Duration(milliseconds: 500),
               autoPlayCurve: Curves.easeInOut,

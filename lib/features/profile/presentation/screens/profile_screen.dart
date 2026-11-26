@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/layout/app_layout.dart';
 import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../authentication/domain/auth_failure.dart';
@@ -174,9 +175,7 @@ class ProfileScreenState extends State<ProfileScreen> {
         bottom: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final scale = (constraints.maxWidth / 430)
-                .clamp(0.82, 1.2)
-                .toDouble();
+            final scale = AppLayout.scaleForWidth(constraints.maxWidth);
             return Column(
               children: [
                 _buildHeader(scale),
@@ -187,7 +186,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                       16 * scale,
                       14 * scale,
                       16 * scale,
-                      82 * scale,
+                      82 * scale + MediaQuery.paddingOf(context).bottom,
                     ),
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 220),

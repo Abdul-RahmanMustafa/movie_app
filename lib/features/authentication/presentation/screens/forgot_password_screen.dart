@@ -14,9 +14,14 @@ import '../widgets/auth_button.dart';
 import '../widgets/auth_field.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key, this.initialEmail = ''});
+  const ForgotPasswordScreen({
+    super.key,
+    this.initialEmail = '',
+    this.authController,
+  });
 
   final String initialEmail;
+  final AuthController? authController;
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -24,7 +29,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final AuthController _authController = AuthController.firebase();
+  late final AuthController _authController =
+      widget.authController ?? AuthController.firebase();
   late final TextEditingController _emailController;
 
   bool _isLoading = false;

@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:movie_app/core/layout/app_layout.dart';
 import 'package:movie_app/features/home/presentation/screens/home_screen.dart';
 import 'package:movie_app/features/home/presentation/widgets/home_carousel.dart';
 import 'package:movie_app/features/home/presentation/widgets/home_hero.dart';
@@ -9,11 +10,13 @@ import 'package:movie_app/features/home/presentation/widgets/section_heading.dar
 
 import '../../../../helpers/fake_movies_controller.dart';
 import '../../../../helpers/localized_test_app.dart';
+import '../../../../helpers/test_surface.dart';
 
 void main() {
   testWidgets('renders the home sections with a package carousel', (
     tester,
   ) async {
+    usePhoneSurface(tester);
     await tester.pumpWidget(
       LocalizedTestApp(
         home: HomeScreen(moviesController: FakeMoviesController()),
@@ -36,14 +39,16 @@ void main() {
   testWidgets('keeps the hero full-bleed and Group 7 at its Figma size', (
     tester,
   ) async {
+    usePhoneSurface(tester);
     await tester.pumpWidget(
       LocalizedTestApp(
         home: HomeScreen(moviesController: FakeMoviesController()),
       ),
     );
     await tester.pump();
-    final scale =
-        MediaQuery.of(tester.element(find.byType(HomeScreen))).size.width / 430;
+    final scale = AppLayout.scaleForWidth(
+      MediaQuery.of(tester.element(find.byType(HomeScreen))).size.width,
+    );
 
     final topInset = MediaQuery.of(
       tester.element(find.byType(HomeHero)),
@@ -61,14 +66,16 @@ void main() {
   testWidgets('moves the active dot when the carousel auto-advances', (
     tester,
   ) async {
+    usePhoneSurface(tester);
     await tester.pumpWidget(
       LocalizedTestApp(
         home: HomeScreen(moviesController: FakeMoviesController()),
       ),
     );
     await tester.pump();
-    final scale =
-        MediaQuery.of(tester.element(find.byType(HomeScreen))).size.width / 430;
+    final scale = AppLayout.scaleForWidth(
+      MediaQuery.of(tester.element(find.byType(HomeScreen))).size.width,
+    );
 
     // The keyed render box includes the dot's 3*scale horizontal margins on
     // each side: active = (18 + 6)*scale, inactive = (6 + 6)*scale.
