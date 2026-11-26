@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "399080020995-4njgnoh6otsk9s2dagu8i7u1fbndokn8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.movie_app",
+            "certificate_hash": "560b7b1ab92c9fb2ffb67538e57bcbedfe37beea"
+          }
+        },
+        {
           "client_id": "399080020995-6875upnj309uhjlrb2rivsgodehomjv3.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

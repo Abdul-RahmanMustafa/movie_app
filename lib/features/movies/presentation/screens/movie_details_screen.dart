@@ -3,13 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../home/presentation/widgets/movie_row.dart';
 import '../../../watchlist/domain/watchlist_failure.dart';
 import '../../../watchlist/presentation/providers/watchlist_controller.dart';
+import '../../../watchlist/presentation/utils/watchlist_failure_localization.dart';
 import '../../domain/entities/movie.dart';
 import '../../domain/movie_failure.dart';
 import '../providers/movies_controller.dart';
+import '../utils/movie_failure_localization.dart';
 import '../widgets/movie_poster_image.dart';
 
 class MovieDetailsScreen extends StatefulWidget {
@@ -94,8 +97,8 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
 
   void _showWatchlistError(Object error) {
     final message = error is WatchlistFailure
-        ? error.message
-        : 'Something went wrong with your Watch List.';
+        ? localizedWatchlistFailure(context.l10n, error)
+        : context.l10n.errorWatchList;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
@@ -104,7 +107,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
   Future<void> _loadMovie() async {
     if (widget.movieId <= 0) {
       setState(() {
-        _errorMessage = 'This movie is unavailable.';
+        _errorMessage = context.l10n.movieUnavailable;
         _isLoading = false;
       });
       return;
@@ -137,13 +140,13 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
     } on MovieFailure catch (failure) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = failure.message;
+        _errorMessage = localizedMovieFailure(context.l10n, failure);
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'Something went wrong while loading this movie.';
+        _errorMessage = context.l10n.errorLoadMovie;
         _isLoading = false;
       });
     }
@@ -171,7 +174,10 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
             children: [
               Text(_errorMessage!, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              TextButton(onPressed: _loadMovie, child: const Text('Try again')),
+              TextButton(
+                onPressed: _loadMovie,
+                child: Text(context.l10n.commonTryAgain),
+              ),
             ],
           ),
         ),
@@ -206,8 +212,8 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     ),
                   ),
                 ),
-                Positioned(
-                  left: 8,
+                PositionedDirectional(
+                  start: 8,
                   top: MediaQuery.paddingOf(context).top + 4,
                   child: IconButton(
                     onPressed: () => context.pop(),
@@ -218,8 +224,8 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     ),
                   ),
                 ),
-                Positioned(
-                  right: 12,
+                PositionedDirectional(
+                  end: 12,
                   top: MediaQuery.paddingOf(context).top + 4,
                   child: IconButton(
                     onPressed: _isBookmarkLoading || _isBookmarkBusy
@@ -309,9 +315,9 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Watch',
-                      style: TextStyle(
+                    child: Text(
+                      context.l10n.movieWatch,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -348,12 +354,12 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                   ],
                 ),
                 const SizedBox(height: 26),
-                const _SectionTitle('Screen Shots'),
+                _SectionTitle(context.l10n.movieScreenshots),
                 const SizedBox(height: 12),
                 if (movie.screenshotImageUrls.isEmpty)
-                  const Text(
-                    'No screenshots are available.',
-                    style: TextStyle(color: Color(0xFFAAAAAA)),
+                  Text(
+                    context.l10n.movieNoScreenshots,
+                    style: const TextStyle(color: Color(0xFFAAAAAA)),
                   )
                 else
                   SizedBox(
@@ -376,12 +382,12 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     ),
                   ),
                 const SizedBox(height: 28),
-                const _SectionTitle('Similar Movies'),
+                _SectionTitle(context.l10n.movieSimilar),
                 const SizedBox(height: 12),
                 if (_suggestions.isEmpty)
-                  const Text(
-                    'No similar movies are available.',
-                    style: TextStyle(color: Color(0xFFAAAAAA)),
+                  Text(
+                    context.l10n.movieNoSimilar,
+                    style: const TextStyle(color: Color(0xFFAAAAAA)),
                   )
                 else
                   MovieRow(
@@ -392,11 +398,11 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     },
                   ),
                 const SizedBox(height: 28),
-                const _SectionTitle('Summary'),
+                _SectionTitle(context.l10n.movieSummary),
                 const SizedBox(height: 10),
                 Text(
                   movie.description.isEmpty
-                      ? 'No summary is available.'
+                      ? context.l10n.movieNoSummary
                       : movie.description,
                   style: const TextStyle(
                     color: Color(0xFFCCCCCC),
@@ -405,12 +411,12 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                   ),
                 ),
                 const SizedBox(height: 28),
-                const _SectionTitle('Cast'),
+                _SectionTitle(context.l10n.movieCast),
                 const SizedBox(height: 12),
                 if (movie.cast.isEmpty)
-                  const Text(
-                    'No cast information is available.',
-                    style: TextStyle(color: Color(0xFFAAAAAA)),
+                  Text(
+                    context.l10n.movieNoCast,
+                    style: const TextStyle(color: Color(0xFFAAAAAA)),
                   )
                 else
                   SizedBox(
@@ -425,12 +431,12 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     ),
                   ),
                 const SizedBox(height: 28),
-                const _SectionTitle('Genres'),
+                _SectionTitle(context.l10n.movieGenres),
                 const SizedBox(height: 12),
                 if (movie.genres.isEmpty)
-                  const Text(
-                    'No genres are available.',
-                    style: TextStyle(color: Color(0xFFAAAAAA)),
+                  Text(
+                    context.l10n.movieNoGenres,
+                    style: const TextStyle(color: Color(0xFFAAAAAA)),
                   )
                 else
                   Wrap(
@@ -448,7 +454,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              genre,
+                              context.l10n.genreLabel(genre),
                               style: const TextStyle(color: AppColors.white),
                             ),
                           ),
@@ -476,7 +482,7 @@ class _StateBody extends StatelessWidget {
       child: Column(
         children: [
           Align(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: IconButton(
               onPressed: onBack,
               icon: const Icon(Icons.arrow_back, color: AppColors.white),

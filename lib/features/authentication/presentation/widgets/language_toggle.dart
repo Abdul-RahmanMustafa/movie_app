@@ -1,55 +1,50 @@
-
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/locale_scope.dart';
+import '../../../../core/localization/localization_extensions.dart';
 import '../theme/auth_styles.dart';
 
-class LanguageToggle extends StatefulWidget {
+class LanguageToggle extends StatelessWidget {
   const LanguageToggle({super.key});
 
   @override
-  State<LanguageToggle> createState() => _LanguageToggleState();
-}
-
-class _LanguageToggleState extends State<LanguageToggle> {
-  int selected = 0;
-
-
-
-
-  @override
   Widget build(BuildContext context) {
+    final controller = LocaleScope.of(context);
+    final selected = controller.isArabic ? 1 : 0;
     return Container(
       width: 90,
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 0),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: authYellow,
-          width: 2,
-        ),
+        border: Border.all(color: authYellow, width: 2),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(
           2,
-              (i) => GestureDetector(
-            onTap: () => setState(() => selected = i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: selected == i
-                    ? authYellow
-                    : Colors.transparent,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: ClipOval(
-                  child: CustomPaint(
-                    size: const Size(27, 27),
-                    painter: _FlagPainter(isEgypt: i == 1),
+          (i) => Semantics(
+            button: true,
+            label: i == 0
+                ? context.l10n.languageEnglish
+                : context.l10n.languageArabic,
+            selected: selected == i,
+            child: GestureDetector(
+              onTap: () => controller.setLocale(Locale(i == 0 ? 'en' : 'ar')),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: selected == i ? authYellow : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: ClipOval(
+                    child: CustomPaint(
+                      size: const Size(27, 27),
+                      painter: _FlagPainter(isEgypt: i == 1),
+                    ),
                   ),
                 ),
               ),
@@ -59,9 +54,6 @@ class _LanguageToggleState extends State<LanguageToggle> {
       ),
     );
   }
-
-
-
 }
 
 class _FlagPainter extends CustomPainter {
@@ -74,9 +66,7 @@ class _FlagPainter extends CustomPainter {
     final rect = Offset.zero & size;
 
     canvas.save();
-    canvas.clipPath(
-      Path()..addOval(rect),
-    );
+    canvas.clipPath(Path()..addOval(rect));
 
     if (isEgypt) {
       _drawEgyptFlag(canvas, size);
@@ -92,28 +82,16 @@ class _FlagPainter extends CustomPainter {
 
     for (int i = 0; i < 13; i++) {
       final paint = Paint()
-        ..color = i.isEven
-            ? const Color(0xFFB22234)
-            : Colors.white;
+        ..color = i.isEven ? const Color(0xFFB22234) : Colors.white;
 
       canvas.drawRect(
-        Rect.fromLTWH(
-          0,
-          i * stripeHeight,
-          size.width,
-          stripeHeight + 0.2,
-        ),
+        Rect.fromLTWH(0, i * stripeHeight, size.width, stripeHeight + 0.2),
         paint,
       );
     }
 
     canvas.drawRect(
-      Rect.fromLTWH(
-        0,
-        0,
-        size.width * 0.52,
-        stripeHeight * 7,
-      ),
+      Rect.fromLTWH(0, 0, size.width * 0.52, stripeHeight * 7),
       Paint()..color = const Color(0xFF3C3B6E),
     );
 
@@ -136,20 +114,11 @@ class _FlagPainter extends CustomPainter {
   void _drawEgyptFlag(Canvas canvas, Size size) {
     final stripeHeight = size.height / 3;
 
-    final colors = [
-      const Color(0xFFCE1126),
-      Colors.white,
-      Colors.black,
-    ];
+    final colors = [const Color(0xFFCE1126), Colors.white, Colors.black];
 
     for (int i = 0; i < 3; i++) {
       canvas.drawRect(
-        Rect.fromLTWH(
-          0,
-          i * stripeHeight,
-          size.width,
-          stripeHeight + 0.2,
-        ),
+        Rect.fromLTWH(0, i * stripeHeight, size.width, stripeHeight + 0.2),
         Paint()..color = colors[i],
       );
     }

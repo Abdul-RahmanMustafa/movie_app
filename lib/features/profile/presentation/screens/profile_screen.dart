@@ -4,17 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../authentication/domain/auth_failure.dart';
 import '../../../authentication/presentation/providers/auth_controller.dart';
+import '../../../authentication/presentation/utils/auth_failure_localization.dart';
 import '../../../movies/domain/entities/movie.dart';
 import '../../../watchlist/domain/watchlist_failure.dart';
 import '../../../watchlist/presentation/providers/watchlist_controller.dart';
+import '../../../watchlist/presentation/utils/watchlist_failure_localization.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/profile_failure.dart';
 import '../models/profile_list_entry.dart';
 import '../profile_section.dart';
 import '../providers/profile_controller.dart';
+import '../utils/profile_failure_localization.dart';
 import '../widgets/profile_avatar.dart';
 import '../widgets/profile_list.dart';
 import '../widgets/profile_stat.dart';
@@ -100,8 +104,8 @@ class ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           _profileLoading = false;
           _profileError = error is ProfileFailure
-              ? error.message
-              : 'Something went wrong while loading your profile.';
+              ? localizedProfileFailure(context.l10n, error)
+              : context.l10n.errorLoadProfile;
         });
       },
     );
@@ -127,8 +131,8 @@ class ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           _watchlistLoading = false;
           _watchlistError = error is WatchlistFailure
-              ? error.message
-              : 'Something went wrong while loading your Watch List.';
+              ? localizedWatchlistFailure(context.l10n, error)
+              : context.l10n.errorLoadWatchList;
         });
       },
     );
@@ -147,10 +151,10 @@ class ProfileScreenState extends State<ProfileScreen> {
       context.go('/login');
     } on AuthFailure catch (failure) {
       if (!mounted) return;
-      _showMessage(failure.message);
+      _showMessage(localizedAuthFailure(context.l10n, failure));
     } catch (_) {
       if (!mounted) return;
-      _showMessage('Could not sign out safely. Please try again.');
+      _showMessage(context.l10n.errorSignOut);
     } finally {
       if (mounted) setState(() => _isSigningOut = false);
     }
@@ -164,10 +168,8 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTextStyle.merge(style: const TextStyle(
-      fontFamily: 'Roboto',
-      fontWeight: FontWeight.w400,
-    ),
+    return DefaultTextStyle.merge(
+      style: const TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w400),
       child: SafeArea(
         bottom: false,
         child: LayoutBuilder(
@@ -232,7 +234,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                     else
                       ProfileAvatar(
                         avatarIndex: profile?.avatarIndex ?? 0,
-                          size: 118 * scale,
+                        size: 118 * scale,
                       ),
                     SizedBox(height: 8 * scale),
                     Text(
@@ -256,7 +258,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                 top: 0,
                 centerX: 0,
                 number: '${_watchlist.length}',
-                label: 'Wish List',
+                label: context.l10n.profileWishList,
                 positioned: false,
               ),
               SizedBox(width: 30 * scale),
@@ -265,7 +267,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                 top: 0,
                 centerX: 0,
                 number: '0',
-                label: 'History',
+                label: context.l10n.profileHistory,
                 positioned: false,
               ),
               SizedBox(width: 8 * scale),
@@ -299,7 +301,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     child: Text(
-                      'Edit Profile',
+                      context.l10n.profileEdit,
                       style: TextStyle(
                         fontFamily: 'Roboto',
                         fontSize: 20 * scale,
@@ -313,35 +315,32 @@ class ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: SizedBox(
                   height: 48 * scale,
-                  child: Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: ElevatedButton.icon(
-                      onPressed: _isSigningOut ? null : _signOut,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _danger,
-                        foregroundColor: AppColors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12 * scale),
-                        ),
+                  child: ElevatedButton.icon(
+                    onPressed: _isSigningOut ? null : _signOut,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _danger,
+                      foregroundColor: AppColors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12 * scale),
                       ),
-                      icon: _isSigningOut
-                          ? SizedBox(
-                        width: 16 * scale,
-                        height: 16 * scale,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.white,
-                        ),
-                      )
-                          : Icon(Icons.logout, size: 18 * scale),
-                        label: Text(
-                          _isSigningOut ? '' : 'Exit',
-                          style: TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 20 * scale,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+                    ),
+                    icon: _isSigningOut
+                        ? SizedBox(
+                            width: 16 * scale,
+                            height: 16 * scale,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.white,
+                            ),
+                          )
+                        : Icon(Icons.logout, size: 18 * scale),
+                    label: Text(
+                      _isSigningOut ? '' : context.l10n.profileExit,
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 20 * scale,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
                 ),
@@ -363,13 +362,13 @@ class ProfileScreenState extends State<ProfileScreen> {
             scale: scale,
             section: ProfileSection.watchList,
             icon: Icons.list,
-            label: 'Watch List',
+            label: context.l10n.profileWatchList,
           ),
           _profileTab(
             scale: scale,
             section: ProfileSection.history,
             icon: Icons.folder,
-            label: 'History',
+            label: context.l10n.profileHistory,
           ),
         ],
       ),
@@ -426,8 +425,8 @@ class ProfileScreenState extends State<ProfileScreen> {
         return ProfileList(
           key: const ValueKey('watch-list'),
           scale: scale,
-          title: 'Watch List',
-          badge: '${_watchlist.length} saved',
+          title: context.l10n.profileWatchList,
+          badge: context.l10n.profileSavedCount(_watchlist.length),
           icon: Icons.bookmark,
           emptyMessage: '',
           emptyAsset: AppAssets.profilePopcorn,
@@ -442,8 +441,8 @@ class ProfileScreenState extends State<ProfileScreen> {
         return ProfileList(
           key: const ValueKey('history'),
           scale: scale,
-          title: 'History',
-          badge: '0 watched',
+          title: context.l10n.profileHistory,
+          badge: context.l10n.profileWatchedCount(0),
           icon: Icons.history,
           emptyMessage: '',
           emptyAsset: AppAssets.profilePopcorn,

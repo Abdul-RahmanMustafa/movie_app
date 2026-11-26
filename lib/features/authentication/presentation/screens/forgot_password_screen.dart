@@ -1,14 +1,15 @@
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/localization/localization_extensions.dart';
 import '../../domain/auth_failure.dart';
 import '../providers/auth_controller.dart';
 import '../theme/auth_styles.dart';
 import '../utils/auth_validators.dart';
+import '../utils/auth_failure_localization.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_field.dart';
 
@@ -37,9 +38,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController(
-      text: widget.initialEmail.trim(),
-    );
+    _emailController = TextEditingController(text: widget.initialEmail.trim());
   }
 
   @override
@@ -56,9 +55,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     AuthFailure? failure;
     try {
-      await _authController.sendPasswordResetEmail(
-        _emailController.text,
-      );
+      await _authController.sendPasswordResetEmail(_emailController.text);
     } on AuthFailure catch (error) {
       failure = error;
     } catch (_) {
@@ -74,20 +71,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (failure != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(failure.message, style: _textStyle),
+          content: Text(
+            localizedAuthFailure(context.l10n, failure),
+            style: _textStyle,
+          ),
         ),
       );
       return;
     }
 
-    final normalizedEmail =
-    _emailController.text.trim().toLowerCase();
+    final normalizedEmail = _emailController.text.trim().toLowerCase();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'If an account exists for $normalizedEmail, a password reset email '
-              'has been sent. Check your inbox and spam folder.',
+          context.l10n.passwordResetPrivacyMessage(normalizedEmail),
           style: _textStyle,
         ),
       ),
@@ -96,15 +94,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final screenSize = MediaQuery.sizeOf(context);
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
     final scale = math.min(
       1.0,
-      math.min(
-        screenSize.width / 430,
-        screenSize.height / 932,
-      ),
+      math.min(screenSize.width / 430, screenSize.height / 932),
     );
 
     return Scaffold(
@@ -123,7 +119,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       width: 48 * scale,
                       child: IconButton(
                         onPressed: _isLoading ? null : () => context.pop(),
-                        alignment: Alignment.centerLeft,
+                        alignment: AlignmentDirectional.centerStart,
                         icon: Icon(
                           Icons.arrow_back,
                           color: authYellow,
@@ -131,9 +127,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Forget Password',
+                        l10n.forgotPassword,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Roboto',
@@ -155,7 +151,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 builder: (context, constraints) {
                   return SingleChildScrollView(
                     keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     padding: EdgeInsets.fromLTRB(
                       24 * scale,
                       8 * scale,
@@ -171,14 +167,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       child: Center(
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: 400 * scale,
-                          ),
+                          constraints: BoxConstraints(maxWidth: 400 * scale),
                           child: Form(
                             key: _formKey,
                             child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.stretch,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 SizedBox(height: 8 * scale),
 
@@ -199,18 +192,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                                 AuthField(
                                   controller: _emailController,
-                                  hint: 'Email',
-                                  iconPath:
-                                  'assets/images/auth/ic_email.png',
-                                  keyboardType:
-                                  TextInputType.emailAddress,
-                                  validator: emailValidator,
+                                  hint: l10n.email,
+                                  iconPath: 'assets/images/auth/ic_email.png',
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: emailValidator(l10n),
                                 ),
 
                                 SizedBox(height: 20 * scale),
 
                                 AuthButton(
-                                  text: 'Verify Email',
+                                  text: l10n.verifyEmail,
                                   isLoading: _isLoading,
                                   onPressed: _verifyEmail,
                                 ),

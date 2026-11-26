@@ -1,15 +1,17 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../authentication/domain/auth_failure.dart';
 import '../../../authentication/presentation/providers/auth_controller.dart';
+import '../../../authentication/presentation/utils/auth_failure_localization.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/profile_failure.dart';
 import '../providers/profile_controller.dart';
+import '../utils/profile_failure_localization.dart';
 import '../widgets/profile_avatar.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -72,7 +74,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     _profileSubscription = _profileController.observeProfile().listen(
-          (profile) {
+      (profile) {
         if (!mounted) return;
 
         setState(() {
@@ -94,8 +96,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         setState(() {
           _isLoading = false;
           _loadError = error is ProfileFailure
-              ? error.message
-              : 'Something went wrong while loading your profile.';
+              ? localizedProfileFailure(context.l10n, error)
+              : context.l10n.errorLoadProfile;
         });
       },
     );
@@ -115,13 +117,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (!mounted) return;
 
-      _showMessage('Profile updated successfully.');
+      _showMessage(context.l10n.profileUpdated);
     } on ProfileFailure catch (failure) {
       if (!mounted) return;
-      _showMessage(failure.message);
+      _showMessage(localizedProfileFailure(context.l10n, failure));
     } catch (_) {
       if (!mounted) return;
-      _showMessage('Could not update your profile. Please try again.');
+      _showMessage(context.l10n.errorUpdateProfile);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -133,7 +135,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_isResettingPassword) return;
 
     if (email.isEmpty) {
-      _showMessage('No email address is available for this account.');
+      _showMessage(context.l10n.profileNoEmail);
       return;
     }
 
@@ -144,22 +146,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (!mounted) return;
 
-      _showMessage(
-        'Password reset email sent. Check your inbox and spam folder.',
-      );
+      _showMessage(context.l10n.profileResetSent);
     } on AuthFailure catch (failure) {
       if (!mounted) return;
-      _showMessage(failure.message);
+      _showMessage(localizedAuthFailure(context.l10n, failure));
     } catch (_) {
       if (!mounted) return;
-      _showMessage('Could not send the reset email. Please try again.');
+      _showMessage(context.l10n.errorResetEmail);
     } finally {
       if (mounted) setState(() => _isResettingPassword = false);
     }
   }
 
   void _showDeleteInfo() {
-    _showMessage('Account deletion is not available yet.');
+    _showMessage(context.l10n.profileDeleteUnavailable);
   }
 
   void _showMessage(String message) {
@@ -194,8 +194,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   mainAxisSpacing: 14,
                   crossAxisSpacing: 14,
@@ -216,28 +215,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ? AppColors.accent
                             : const Color(0xFF2A2A2A),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.accent,
-                          width: 2,
-                        ),
+                        border: Border.all(color: AppColors.accent, width: 2),
                         boxShadow: isSelected
                             ? [
-                          BoxShadow(
-                            color: AppColors.accent.withValues(
-                              alpha: 0.18,
-                            ),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          ),
-                        ]
+                                BoxShadow(
+                                  color: AppColors.accent.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                ),
+                              ]
                             : [],
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(11),
-                        child: ProfileAvatar(
-                          avatarIndex: index,
-                          size: 72,
-                        ),
+                        child: ProfileAvatar(avatarIndex: index, size: 72),
                       ),
                     ),
                   );
@@ -263,9 +256,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           builder: (context, constraints) {
             if (_isLoading) {
               return const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.accent,
-                ),
+                child: CircularProgressIndicator(color: AppColors.accent),
               );
             }
 
@@ -289,9 +280,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: _observeProfile,
-                        child: const Text(
-                          'Try again',
-                          style: TextStyle(
+                        child: Text(
+                          context.l10n.commonTryAgain,
+                          style: const TextStyle(
                             fontFamily: 'Roboto',
                             fontSize: 20,
                             fontWeight: FontWeight.w400,
@@ -325,9 +316,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 color: AppColors.accent,
                               ),
                             ),
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                'Pick Avatar',
+                                context.l10n.profilePickAvatar,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: AppColors.accent,
@@ -346,7 +337,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             onTap: _isSaving ? null : _pickAvatar,
                             borderRadius: BorderRadius.circular(60),
                             child: Stack(
-                              alignment: Alignment.bottomRight,
+                              alignment: AlignmentDirectional.bottomEnd,
                               children: [
                                 ProfileAvatar(
                                   avatarIndex: _avatarIndex,
@@ -371,12 +362,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const SizedBox(height: 34),
                         _ProfileField(
                           controller: _nameController,
-                          hint: 'Name',
+                          hint: context.l10n.name,
                           icon: Icons.person,
                           enabled: !_isSaving,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your name';
+                              return context.l10n.validationNameRequired;
                             }
                             return null;
                           },
@@ -384,7 +375,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const SizedBox(height: 14),
                         _ProfileField(
                           controller: _phoneController,
-                          hint: 'Phone',
+                          hint: context.l10n.phone,
                           icon: Icons.phone,
                           enabled: !_isSaving,
                           keyboardType: TextInputType.phone,
@@ -392,43 +383,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             final phone = value?.trim() ?? '';
 
                             if (phone.isNotEmpty &&
-                                !RegExp(r'^\+?[0-9]{8,15}$')
-                                    .hasMatch(phone)) {
-                              return 'Enter a valid phone number';
+                                !RegExp(r'^\+?[0-9]{8,15}$').hasMatch(phone)) {
+                              return context.l10n.validationPhoneInvalid;
                             }
 
                             return null;
                           },
                         ),
                         Align(
-                          alignment: Alignment.centerLeft,
+                          alignment: AlignmentDirectional.centerStart,
                           child: TextButton(
                             onPressed: _isResettingPassword || _isSaving
                                 ? null
                                 : _resetPassword,
                             style: TextButton.styleFrom(
                               foregroundColor: AppColors.white,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             child: _isResettingPassword
                                 ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                color: AppColors.accent,
-                                strokeWidth: 2,
-                              ),
-                            )
-                                : const Text(
-                              'Reset Password',
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: 20,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.accent,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    context.l10n.profileResetPassword,
+                                    style: const TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
                           ),
                         ),
                         const Spacer(),
@@ -443,9 +431,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
-                              'Delete Account',
-                              style: TextStyle(
+                            child: Text(
+                              context.l10n.profileDeleteAccount,
+                              style: const TextStyle(
                                 fontFamily: 'Roboto',
                                 fontSize: 20,
                                 fontWeight: FontWeight.w400,
@@ -467,21 +455,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                             child: _isSaving
                                 ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                color: AppColors.background,
-                                strokeWidth: 2,
-                              ),
-                            )
-                                : const Text(
-                              'Update Data',
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: 20,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.background,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    context.l10n.profileUpdateData,
+                                    style: const TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
@@ -553,10 +541,7 @@ class _ProfileField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.accent,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
         ),
       ),
     );

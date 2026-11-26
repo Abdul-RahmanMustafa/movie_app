@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../constants/app_assets.dart';
+import '../localization/localization_extensions.dart';
 import '../theme/app_colors.dart';
 
 /// Figma Home frame `47:1248` bottom navigation bar.
@@ -33,7 +34,12 @@ class AppBottomNavigationBar extends StatelessWidget {
         // Match the 430px Figma design width on any device.
         final scale = constraints.maxWidth / 430;
         return Padding(
-          padding: EdgeInsets.fromLTRB(9 * scale, 0, 8 * scale, 9 * scale),
+          padding: EdgeInsetsDirectional.fromSTEB(
+            9 * scale,
+            0,
+            8 * scale,
+            9 * scale,
+          ),
           child: SizedBox(
             height: 61 * scale,
             child: DecoratedBox(
@@ -45,11 +51,16 @@ class AppBottomNavigationBar extends StatelessWidget {
                 // Four equal slots distribute the icons across the bar.
                 children: List.generate(4, (index) {
                   return Expanded(
-                    child: InkWell(
-                      onTap: () => onTap(index),
-                      borderRadius: BorderRadius.circular(16 * scale),
-                      child: Center(
-                        child: _icon(index, selectedIndex == index, scale),
+                    child: Semantics(
+                      button: true,
+                      selected: selectedIndex == index,
+                      label: _label(context, index),
+                      child: InkWell(
+                        onTap: () => onTap(index),
+                        borderRadius: BorderRadius.circular(16 * scale),
+                        child: Center(
+                          child: _icon(index, selectedIndex == index, scale),
+                        ),
                       ),
                     ),
                   );
@@ -60,6 +71,15 @@ class AppBottomNavigationBar extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _label(BuildContext context, int index) {
+    return switch (index) {
+      homeIndex => context.l10n.navHome,
+      vectorIndex => context.l10n.navSearch,
+      exploreIndex => context.l10n.navExplore,
+      _ => context.l10n.navProfile,
+    };
   }
 
   /// Returns the correct supplied icon for a tab, tinted by active state.

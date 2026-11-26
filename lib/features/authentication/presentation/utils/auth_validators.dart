@@ -1,26 +1,28 @@
-import 'package:flutter/material.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
-String? requiredValidator(String? value) =>
-    value == null || value.trim().isEmpty ? 'This field is required' : null;
-
-String? emailValidator(String? value) {
-  if (value == null || value.trim().isEmpty) return 'Email is required';
-  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value.trim())) {
-    return 'Enter a valid email';
-  }
-  return null;
+String? Function(String?) requiredValidator(AppLocalizations l10n) {
+  return (value) =>
+      value == null || value.trim().isEmpty ? l10n.validationRequired : null;
 }
 
-String? passwordValidator(String? value) {
-  if (value == null || value.isEmpty) return 'Password is required';
-  if (value.length < 8) return 'Use at least 8 characters';
-  return null;
+String? Function(String?) emailValidator(AppLocalizations l10n) {
+  return (value) {
+    if (value == null || value.trim().isEmpty) {
+      return l10n.validationEmailRequired;
+    }
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value.trim())) {
+      return l10n.validationEmailInvalid;
+    }
+    return null;
+  };
 }
 
-void showPending(BuildContext context, String action) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('$action will be available after backend integration.'),
-    ),
-  );
+String? Function(String?) passwordValidator(AppLocalizations l10n) {
+  return (value) {
+    if (value == null || value.isEmpty) {
+      return l10n.validationPasswordRequired;
+    }
+    if (value.length < 8) return l10n.validationPasswordLength;
+    return null;
+  };
 }

@@ -1,13 +1,14 @@
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../domain/auth_failure.dart';
 import '../providers/auth_controller.dart';
 import '../theme/auth_styles.dart';
 import '../utils/auth_navigation.dart';
+import '../utils/auth_failure_localization.dart';
 import '../utils/auth_validators.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_field.dart';
@@ -84,7 +85,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            failure.message,
+            localizedAuthFailure(context.l10n, failure),
             style: _textStyle,
           ),
         ),
@@ -99,13 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _avatarController.dispose();
 
-    for (final controller in [
-      name,
-      email,
-      password,
-      confirm,
-      phone,
-    ]) {
+    for (final controller in [name, email, password, confirm, phone]) {
       controller.dispose();
     }
 
@@ -129,11 +124,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ? (_avatarController.page ?? avatar.toDouble())
                   : avatar.toDouble();
 
-              final distance =
-              (currentPage - index).abs().clamp(0.0, 1.0);
+              final distance = (currentPage - index).abs().clamp(0.0, 1.0);
 
-              final size =
-                  (136.0 - (42.0 * distance)) * scale;
+              final size = (136.0 - (42.0 * distance)) * scale;
 
               return Center(
                 child: AnimatedContainer(
@@ -157,14 +150,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final screenSize = MediaQuery.sizeOf(context);
 
     final scale = math.min(
       1.0,
-      math.min(
-        screenSize.width / 430,
-        screenSize.height / 932,
-      ),
+      math.min(screenSize.width / 430, screenSize.height / 932),
     );
 
     return Scaffold(
@@ -174,9 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           children: [
             // Fixed AppBar
             Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 24 * scale,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 24 * scale),
               child: SizedBox(
                 height: 48 * scale,
                 child: Row(
@@ -187,11 +176,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onPressed: _isLoading
                             ? null
                             : () => context.go(
-                          AuthNavigation.routeWithDestination(
-                            '/login',
-                            _intendedDestination(),
-                          ),
-                        ),
+                                AuthNavigation.routeWithDestination(
+                                  '/login',
+                                  _intendedDestination(),
+                                ),
+                              ),
                         icon: Icon(
                           Icons.arrow_back,
                           color: authYellow,
@@ -199,9 +188,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Register',
+                        l10n.register,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Roboto',
@@ -221,81 +210,69 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Expanded(
               child: SingleChildScrollView(
                 keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag,
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: EdgeInsets.symmetric(
                   horizontal: 24 * scale,
                   vertical: 18 * scale,
                 ),
                 child: Center(
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: 400 * scale,
-                    ),
+                    constraints: BoxConstraints(maxWidth: 400 * scale),
                     child: Form(
                       key: formKey,
                       child: Column(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.stretch,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _buildAvatarCarousel(scale),
 
                           SizedBox(height: 8 * scale),
 
-                          const Center(
-                            child: Text(
-                              'Avatar',
-                              style: _textStyle,
-                            ),
-                          ),
+                          Center(child: Text(l10n.avatar, style: _textStyle)),
 
                           SizedBox(height: 12 * scale),
 
                           AuthField(
                             controller: name,
-                            hint: 'Name',
+                            hint: l10n.name,
                             iconPath: 'assets/images/auth/ic_name.svg',
 
-                            validator: requiredValidator,
+                            validator: requiredValidator(l10n),
                           ),
 
                           SizedBox(height: 14 * scale),
 
                           AuthField(
                             controller: email,
-                            hint: 'Email',
-                            iconPath:
-                            'assets/images/auth/ic_email.png',
-                            keyboardType:
-                            TextInputType.emailAddress,
-                            validator: emailValidator,
+                            hint: l10n.email,
+                            iconPath: 'assets/images/auth/ic_email.png',
+                            keyboardType: TextInputType.emailAddress,
+                            validator: emailValidator(l10n),
                           ),
 
                           SizedBox(height: 14 * scale),
 
                           AuthField(
                             controller: password,
-                            hint: 'Password',
-                            iconPath:
-                            'assets/images/auth/ic_lock.png',
+                            hint: l10n.password,
+                            iconPath: 'assets/images/auth/ic_lock.png',
                             obscure: true,
-                            validator: passwordValidator,
+                            validator: passwordValidator(l10n),
                           ),
 
                           SizedBox(height: 14 * scale),
 
                           AuthField(
                             controller: confirm,
-                            hint: 'Confirm Password',
-                            iconPath:
-                            'assets/images/auth/ic_lock.png',
+                            hint: l10n.confirmPassword,
+                            iconPath: 'assets/images/auth/ic_lock.png',
                             obscure: true,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Confirm your password';
+                                return l10n.validationConfirmPassword;
                               }
 
                               if (value != password.text) {
-                                return 'Passwords do not match';
+                                return l10n.validationPasswordsMismatch;
                               }
 
                               return null;
@@ -306,14 +283,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           AuthField(
                             controller: phone,
-                            hint: 'Phone Number',
+                            hint: l10n.phoneNumber,
                             iconPath: 'assets/images/auth/ic_phone.svg',
                             keyboardType: TextInputType.phone,
                             validator: (value) {
                               if (value == null ||
-                                  !RegExp(r'^\+?[0-9]{10,15}$')
-                                      .hasMatch(value.trim())) {
-                                return 'Enter a valid phone number';
+                                  !RegExp(
+                                    r'^\+?[0-9]{10,15}$',
+                                  ).hasMatch(value.trim())) {
+                                return l10n.validationPhoneInvalid;
                               }
 
                               return null;
@@ -323,7 +301,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           SizedBox(height: 18 * scale),
 
                           AuthButton(
-                            text: 'Create Account',
+                            text: l10n.createAccount,
                             fontSize: 20,
                             isLoading: _isLoading,
                             onPressed: _submitRegistration,
@@ -332,26 +310,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           SizedBox(height: 16 * scale),
 
                           Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Already Have Account ? ',
-                                  style: _textStyle.copyWith(fontSize: 14),
+                                '${l10n.alreadyHaveAccount} ',
+                                style: _textStyle.copyWith(fontSize: 14),
                               ),
                               GestureDetector(
                                 onTap: _isLoading
                                     ? null
                                     : () => context.go(
-                                  AuthNavigation
-                                      .routeWithDestination(
-                                    '/login',
-                                    _intendedDestination(),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Login',
-                                  style: TextStyle(
+                                        AuthNavigation.routeWithDestination(
+                                          '/login',
+                                          _intendedDestination(),
+                                        ),
+                                      ),
+                                child: Text(
+                                  l10n.login,
+                                  style: const TextStyle(
                                     fontFamily: 'Roboto',
                                     fontSize: 14,
                                     fontWeight: FontWeight.w400,
@@ -364,9 +340,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           SizedBox(height: 18 * scale),
 
-                          const Center(
-                            child: LanguageToggle(),
-                          ),
+                          const Center(child: LanguageToggle()),
                         ],
                       ),
                     ),

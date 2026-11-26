@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/localization/localization_extensions.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../movies/domain/entities/movie.dart';
 import 'home_carousel.dart';
 
@@ -83,21 +85,52 @@ class HomeHero extends StatelessWidget {
 
                   // Group 7 already contains the hero typography/button, so no
                   // hand-built Text/FilledButton is layered on top of it.
-                  Positioned(
-                    left: 38 * scale,
-                    top: 7 * scale,
-                    width: 354 * scale,
-                    height: 632 * scale,
-                    child: IgnorePointer(
-                      child: Image.asset(
-                        key: const Key('home_hero_group'),
-                        AppAssets.homeHeroGroup,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.fill,
+                  if (!context.isArabic)
+                    Positioned(
+                      left: 38 * scale,
+                      top: 7 * scale,
+                      width: 354 * scale,
+                      height: 632 * scale,
+                      child: IgnorePointer(
+                        child: Image.asset(
+                          key: const Key('home_hero_group'),
+                          AppAssets.homeHeroGroup,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                    )
+                  else ...[
+                    PositionedDirectional(
+                      top: 34 * scale,
+                      start: 28 * scale,
+                      end: 28 * scale,
+                      child: Text(
+                        context.l10n.homeAvailableNow,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 34 * scale,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                  ),
+                    PositionedDirectional(
+                      bottom: 52 * scale,
+                      start: 28 * scale,
+                      end: 28 * scale,
+                      child: Text(
+                        context.l10n.homeWatchNow,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 42 * scale,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

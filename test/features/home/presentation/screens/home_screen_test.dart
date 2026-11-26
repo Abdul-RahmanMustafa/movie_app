@@ -8,13 +8,16 @@ import 'package:movie_app/features/home/presentation/widgets/movie_row.dart';
 import 'package:movie_app/features/home/presentation/widgets/section_heading.dart';
 
 import '../../../../helpers/fake_movies_controller.dart';
+import '../../../../helpers/localized_test_app.dart';
 
 void main() {
   testWidgets('renders the home sections with a package carousel', (
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(home: HomeScreen(moviesController: FakeMoviesController())),
+      LocalizedTestApp(
+        home: HomeScreen(moviesController: FakeMoviesController()),
+      ),
     );
     await tester.pump();
 
@@ -34,7 +37,9 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(home: HomeScreen(moviesController: FakeMoviesController())),
+      LocalizedTestApp(
+        home: HomeScreen(moviesController: FakeMoviesController()),
+      ),
     );
     await tester.pump();
     final scale =
@@ -57,7 +62,9 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(home: HomeScreen(moviesController: FakeMoviesController())),
+      LocalizedTestApp(
+        home: HomeScreen(moviesController: FakeMoviesController()),
+      ),
     );
     await tester.pump();
     final scale =

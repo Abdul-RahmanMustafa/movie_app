@@ -7,6 +7,7 @@ import 'package:movie_app/features/movies/domain/entities/movie_page.dart';
 import 'package:movie_app/features/search/presentation/screens/search_screen.dart';
 
 import '../../../../helpers/fake_movies_controller.dart';
+import '../../../../helpers/localized_test_app.dart';
 
 void main() {
   testWidgets('debounces non-empty searches and sends query_term', (
@@ -14,7 +15,7 @@ void main() {
   ) async {
     final controller = FakeMoviesController();
     await tester.pumpWidget(
-      MaterialApp(home: SearchScreen(moviesController: controller)),
+      LocalizedTestApp(home: SearchScreen(moviesController: controller)),
     );
 
     await tester.enterText(
@@ -43,7 +44,7 @@ void main() {
       },
     );
     await tester.pumpWidget(
-      MaterialApp(home: SearchScreen(moviesController: controller)),
+      LocalizedTestApp(home: SearchScreen(moviesController: controller)),
     );
 
     await tester.enterText(find.byType(TextField), 'old');

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../movies/domain/entities/movie.dart';
 import '../../../movies/domain/entities/movie_list_query.dart';
 import '../../../movies/domain/movie_failure.dart';
 import '../../../movies/presentation/providers/movies_controller.dart';
+import '../../../movies/presentation/utils/movie_failure_localization.dart';
 import '../widgets/home_hero.dart';
 import '../widgets/movie_row.dart';
 import '../widgets/section_heading.dart';
@@ -68,13 +70,13 @@ class _HomeScreenState extends State<HomeScreen> {
     } on MovieFailure catch (failure) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = failure.message;
+        _errorMessage = localizedMovieFailure(context.l10n, failure);
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'Something went wrong while loading movies.';
+        _errorMessage = context.l10n.errorLoadMovies;
         _isLoading = false;
       });
     }
@@ -119,14 +121,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Center(
                     child: TextButton(
                       onPressed: _loadMovies,
-                      child: const Text('Try again'),
+                      child: Text(context.l10n.commonTryAgain),
                     ),
                   ),
                 )
               else if (_actionMovies.isEmpty)
                 SizedBox(
                   height: 220 * scale,
-                  child: const Center(child: Text('No Action movies found.')),
+                  child: Center(child: Text(context.l10n.homeNoActionMovies)),
                 )
               else
                 MovieRow(

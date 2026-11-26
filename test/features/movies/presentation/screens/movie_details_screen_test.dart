@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:movie_app/features/movies/domain/entities/movie.dart';
 import 'package:movie_app/features/movies/presentation/screens/movie_details_screen.dart';
 import 'package:movie_app/features/watchlist/presentation/providers/watchlist_controller.dart';
 
 import '../../../../helpers/fake_movies_controller.dart';
+import '../../../../helpers/localized_test_app.dart';
 
 void main() {
   testWidgets('renders supported details and recommendations', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
+      LocalizedTestApp(
         home: MovieDetailsScreen(
           movieId: 1,
           moviesController: FakeMoviesController(),

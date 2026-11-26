@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../movies/domain/entities/movie.dart';
 import '../../../movies/domain/entities/movie_list_query.dart';
 import '../../../movies/domain/movie_failure.dart';
 import '../../../movies/presentation/providers/movies_controller.dart';
+import '../../../movies/presentation/utils/movie_failure_localization.dart';
 import '../widgets/explore_genre_chip.dart';
 import '../widgets/explore_movie_card.dart';
 
@@ -73,13 +75,13 @@ class ExploreScreenState extends State<ExploreScreen> {
     } on MovieFailure catch (failure) {
       if (!mounted || requestId != _requestId) return;
       setState(() {
-        _errorMessage = failure.message;
+        _errorMessage = localizedMovieFailure(context.l10n, failure);
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted || requestId != _requestId) return;
       setState(() {
-        _errorMessage = 'Something went wrong while loading movies.';
+        _errorMessage = context.l10n.errorLoadMovies;
         _isLoading = false;
       });
     }
@@ -133,7 +135,7 @@ class ExploreScreenState extends State<ExploreScreen> {
                       itemBuilder: (context, index) {
                         return ExploreGenreChip(
                           key: Key('explore_genre_slot_$index'),
-                          label: _genreLabels[index],
+                          label: context.l10n.genreLabel(_genreLabels[index]),
                           width: _genreWidths[index] * scale,
                           scale: scale,
                           selected: index == _selectedGenreIndex,
@@ -165,7 +167,7 @@ class ExploreScreenState extends State<ExploreScreen> {
                             const SizedBox(height: 12),
                             TextButton(
                               onPressed: _loadGenre,
-                              child: const Text('Try again'),
+                              child: Text(context.l10n.commonTryAgain),
                             ),
                           ],
                         ),
@@ -176,7 +178,11 @@ class ExploreScreenState extends State<ExploreScreen> {
                       height: 420 * scale,
                       child: Center(
                         child: Text(
-                          'No ${_genreLabels[_selectedGenreIndex]} movies found.',
+                          context.l10n.exploreNoResults(
+                            context.l10n.genreLabel(
+                              _genreLabels[_selectedGenreIndex],
+                            ),
+                          ),
                         ),
                       ),
                     )

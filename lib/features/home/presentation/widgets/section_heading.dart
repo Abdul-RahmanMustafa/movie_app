@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// "Action" heading with the gold "See More" link from the Figma frame.
@@ -16,7 +17,7 @@ class SectionHeading extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            'Action',
+            context.l10n.homeAction,
             style: TextStyle(
               color: AppColors.white,
               fontFamily: 'Roboto',
@@ -31,7 +32,7 @@ class SectionHeading extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'See More',
+                  context.l10n.homeSeeMore,
                   style: TextStyle(
                     color: AppColors.accent,
                     fontFamily: 'Roboto',
@@ -40,7 +41,9 @@ class SectionHeading extends StatelessWidget {
                 ),
                 SizedBox(width: 4 * scale),
                 Icon(
-                  Icons.arrow_forward_ios,
+                  context.isArabic
+                      ? Icons.arrow_back_ios
+                      : Icons.arrow_forward_ios,
                   size: 14 * scale,
                   color: AppColors.accent,
                 ),

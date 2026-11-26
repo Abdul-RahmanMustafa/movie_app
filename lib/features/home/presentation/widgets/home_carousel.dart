@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../movies/domain/entities/movie.dart';
 import '../../../movies/presentation/widgets/movie_poster_image.dart';
@@ -54,12 +55,12 @@ class _HomeCarouselState extends State<HomeCarousel> {
       return Center(
         child: TextButton(
           onPressed: widget.onRetry,
-          child: const Text('Try again'),
+          child: Text(context.l10n.commonTryAgain),
         ),
       );
     }
     if (widget.movies.isEmpty) {
-      return const Center(child: Text('No featured movies found.'));
+      return Center(child: Text(context.l10n.homeNoFeaturedMovies));
     }
 
     return Stack(

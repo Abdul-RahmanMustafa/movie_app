@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -76,18 +76,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-        ),
+        Image.asset(imagePath, fit: BoxFit.cover),
 
         if (pageIndex == 1)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildSecondPage(1),
-          )
+          Positioned(left: 0, right: 0, bottom: 0, child: _buildSecondPage(1))
         else if (pageIndex >= 2 && pageIndex <= 5)
           Positioned(
             left: 0,
@@ -109,10 +101,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildDefaultPage(int pageIndex) {
     return Column(
       children: [
-        const Text(
-          'Find Your Next Favorite Movie Here',
+        Text(
+          context.l10n.onboardingTitle1,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 36,
             fontWeight: FontWeight.w500,
@@ -120,11 +112,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'Get access to a huge library of movies '
-              'to suit all tastes. You will surely like it.',
+        Text(
+          context.l10n.onboardingDescription1,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 20,
             fontWeight: FontWeight.w400,
@@ -138,35 +129,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-
-
   Widget _buildSecondPage(int pageIndex) {
+    final l10n = context.l10n;
     final titles = {
-      1: 'Discover Movies',
-      2: 'Explore All Genres',
-      3: 'Create Watchlists',
-      4: 'Rate, Review, and Learn',
-      5: 'Start Watching Now',
+      1: l10n.onboardingTitle2,
+      2: l10n.onboardingTitle3,
+      3: l10n.onboardingTitle4,
+      4: l10n.onboardingTitle5,
+      5: l10n.onboardingTitle6,
     };
 
     final descriptions = {
-      1: 'Explore a vast collection of movies in all qualities and genres. '
-          'Find your next favorite film with ease.',
-      2: 'Discover movies from every genre, in all available qualities. '
-          'Find something new and exciting to watch every day.',
-      3: 'Save movies to your watchlist to keep track of what you want to watch next. '
-          'Enjoy films in various qualities and genres.',
-      4: 'Share your thoughts on the movies you\'ve watched. '
-          'Dive deep into film details and help others discover great movies '
-          'with your reviews.',
+      1: l10n.onboardingDescription2,
+      2: l10n.onboardingDescription3,
+      3: l10n.onboardingDescription4,
+      4: l10n.onboardingDescription5,
     };
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 24,
-        vertical: 24,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       decoration: const BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.only(
@@ -207,13 +189,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-
-
   Widget _buildButtons(int pageIndex) {
     final buttonText = switch (pageIndex) {
-      0 => 'Explore Now',
-      5 => 'Finish',
-      _ => 'Next',
+      0 => context.l10n.commonExploreNow,
+      5 => context.l10n.commonFinish,
+      _ => context.l10n.commonNext,
     };
 
     if (pageIndex == 0 || pageIndex == 1) {
@@ -274,16 +254,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         style: OutlinedButton.styleFrom(
           backgroundColor: AppColors.background,
           foregroundColor: AppColors.primary,
-          side: const BorderSide(
-            color: AppColors.primary,
-          ),
+          side: const BorderSide(color: AppColors.primary),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
         ),
-        child: const Text(
-          'Back',
-          style: TextStyle(
+        child: Text(
+          context.l10n.commonBack,
+          style: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 20,
             fontWeight: FontWeight.w600,

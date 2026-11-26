@@ -1,13 +1,14 @@
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../domain/auth_failure.dart';
 import '../providers/auth_controller.dart';
 import '../theme/auth_styles.dart';
 import '../utils/auth_navigation.dart';
+import '../utils/auth_failure_localization.dart';
 import '../utils/auth_validators.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_field.dart';
@@ -53,10 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     AuthFailure? failure;
     try {
-      await _authController.login(
-        email: email.text,
-        password: password.text,
-      );
+      await _authController.login(email: email.text, password: password.text);
     } on AuthFailure catch (error) {
       failure = error;
     } catch (_) {
@@ -72,7 +70,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (failure != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(failure.message, style: _textStyle),
+          content: Text(
+            localizedAuthFailure(context.l10n, failure),
+            style: _textStyle,
+          ),
         ),
       );
       return;
@@ -105,7 +106,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (failure.type != AuthFailureType.cancelled) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(failure.message, style: _textStyle),
+            content: Text(
+              localizedAuthFailure(context.l10n, failure),
+              style: _textStyle,
+            ),
           ),
         );
       }
@@ -132,34 +136,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final screenSize = MediaQuery.sizeOf(context);
     final safeTop = MediaQuery.viewPaddingOf(context).top;
 
     final scale = math.min(
       1.0,
-      math.min(
-        screenSize.width / 430,
-        screenSize.height / 932,
-      ),
+      math.min(screenSize.width / 430, screenSize.height / 932),
     );
 
-    final topSpacing = math.max(
-      0.0,
-      (67 * scale) - safeTop,
-    );
+    final topSpacing = math.max(0.0, (67 * scale) - safeTop);
 
     return Scaffold(
       backgroundColor: authBackground,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: 24 * scale,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 24 * scale),
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 400 * scale,
-              ),
+              constraints: BoxConstraints(maxWidth: 400 * scale),
               child: Form(
                 key: formKey,
                 child: Column(
@@ -171,9 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: SizedBox(
                         height: 120 * scale,
                         width: 120 * scale,
-                        child: CustomPaint(
-                          painter: PlayLogoPainter(),
-                        ),
+                        child: CustomPaint(painter: PlayLogoPainter()),
                       ),
                     ),
 
@@ -181,31 +174,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     AuthField(
                       controller: email,
-                      hint: 'Email',
+                      hint: l10n.email,
                       iconPath: 'assets/images/auth/ic_email.png',
                       keyboardType: TextInputType.emailAddress,
-                      validator: emailValidator,
+                      validator: emailValidator(l10n),
                     ),
 
                     SizedBox(height: 22.5 * scale),
 
                     AuthField(
                       controller: password,
-                      hint: 'Password',
+                      hint: l10n.password,
                       iconPath: 'assets/images/auth/ic_lock.png',
                       obscure: true,
-                      validator: requiredValidator,
+                      validator: requiredValidator(l10n),
                     ),
 
                     SizedBox(height: 10 * scale),
 
                     Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerEnd,
                       child: TextButton(
                         onPressed: _isBusy ? null : _openForgotPassword,
-                        child: const Text(
-                          'Forget Password ?',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.forgotPasswordQuestion,
+                          style: const TextStyle(
                             fontFamily: 'Roboto',
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
@@ -218,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: 33 * scale),
 
                     AuthButton(
-                      text: 'Login',
+                      text: l10n.login,
                       isLoading: _isLoading,
                       onPressed: _submitLogin,
                     ),
@@ -228,22 +221,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          "Don't Have Account ? ",
-                          style: _textStyle,
-                        ),
+                        Text('${l10n.dontHaveAccount} ', style: _textStyle),
                         GestureDetector(
                           onTap: _isBusy
                               ? null
                               : () => context.go(
-                            AuthNavigation.routeWithDestination(
-                              '/register',
-                              _intendedDestination(),
-                            ),
-                          ),
-                          child: const Text(
-                            'Create One',
-                            style: TextStyle(
+                                  AuthNavigation.routeWithDestination(
+                                    '/register',
+                                    _intendedDestination(),
+                                  ),
+                                ),
+                          child: Text(
+                            l10n.createOne,
+                            style: const TextStyle(
                               fontFamily: 'Roboto',
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
@@ -259,16 +249,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       children: [
                         const Expanded(
-                          child: Divider(
-                            color: authYellow,
-                            indent: 65,
-                          ),
+                          child: Divider(color: authYellow, indent: 65),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text(
-                            'OR',
-                            style: TextStyle(
+                            l10n.commonOr,
+                            style: const TextStyle(
                               fontFamily: 'Roboto',
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
@@ -277,10 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const Expanded(
-                          child: Divider(
-                            color: authYellow,
-                            endIndent: 65,
-                          ),
+                          child: Divider(color: authYellow, endIndent: 65),
                         ),
                       ],
                     ),
@@ -288,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: 28 * scale),
 
                     AuthButton(
-                      text: 'Login With Google',
+                      text: l10n.loginWithGoogle,
                       isLoading: _isGoogleLoading,
                       leading: Image.asset(
                         'assets/images/auth/ic_google.png',
@@ -301,9 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     SizedBox(height: 33 * scale),
 
-                    const Center(
-                      child: LanguageToggle(),
-                    ),
+                    const Center(child: LanguageToggle()),
                   ],
                 ),
               ),

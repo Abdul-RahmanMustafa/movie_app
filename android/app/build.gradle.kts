@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -5,6 +7,40 @@ plugins {
     // END: FlutterFire Configuration
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val developmentSigningPropertiesFile =
+    rootProject.file("development-signing.properties")
+val developmentSigningProperties = Properties()
+val hasDevelopmentSigningConfiguration = developmentSigningPropertiesFile.isFile
+
+if (hasDevelopmentSigningConfiguration) {
+    developmentSigningPropertiesFile.inputStream().use {
+        developmentSigningProperties.load(it)
+    }
+}
+
+fun requiredDevelopmentSigningProperty(name: String): String {
+    val value = developmentSigningProperties.getProperty(name)?.trim()
+    if (value.isNullOrEmpty()) {
+        throw GradleException(
+            "Missing '$name' in ${developmentSigningPropertiesFile.path}",
+        )
+    }
+    return value
+}
+
+val developmentKeystoreFile =
+    if (hasDevelopmentSigningConfiguration) {
+        rootProject.file(requiredDevelopmentSigningProperty("storeFile"))
+    } else {
+        null
+    }
+
+if (hasDevelopmentSigningConfiguration && developmentKeystoreFile?.isFile != true) {
+    throw GradleException(
+        "Development keystore not found at ${developmentKeystoreFile?.path}",
+    )
 }
 
 android {
@@ -28,7 +64,27 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasDevelopmentSigningConfiguration) {
+            create("development") {
+                storeFile = requireNotNull(developmentKeystoreFile)
+                storePassword = requiredDevelopmentSigningProperty("storePassword")
+                keyAlias = requiredDevelopmentSigningProperty("keyAlias")
+                keyPassword = requiredDevelopmentSigningProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            // Opt in to the shared development certificate when its ignored
+            // local configuration exists. Otherwise, keep Flutter's standard
+            // per-machine debug signing behavior.
+            if (hasDevelopmentSigningConfiguration) {
+                signingConfig = signingConfigs.getByName("development")
+            }
+        }
+
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.

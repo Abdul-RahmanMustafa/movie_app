@@ -1,6 +1,73 @@
 # movie_app
 Movie App - Route Graduation Project
 
+## Shared Android development signing
+
+The Android debug build supports an optional shared **development-only**
+certificate. This lets approved teammates and mentors use one Firebase Android
+OAuth identity for Google Sign-In. It is separate from production/release
+signing and its secret files are intentionally excluded from Git.
+
+When `android/development-signing.properties` is absent, Gradle keeps Flutter's
+standard per-machine debug signing configuration. This makes the shared setup
+optional and preserves the normal fallback for contributors who do not need
+Google Sign-In.
+
+### Create the shared certificate once
+
+Only the designated project owner should run:
+
+```sh
+./tool/create_android_development_keystore.sh
+```
+
+The script creates these ignored files, generates strong random credentials,
+and prints only the certificate fingerprints:
+
+- `android/keystores/movie-app-development.jks`
+- `android/development-signing.properties`
+
+Do not run the script independently on every machine. Each run creates a
+different certificate and therefore different Firebase fingerprints. Store
+the two generated files together in the team's password manager or another
+encrypted file-sharing channel. Never send their contents in chat, email, an
+issue, or a pull request.
+
+### Configure a teammate or mentor machine
+
+1. Clone the repository and check out the intended development branch.
+2. Obtain the two shared files from the project owner through the approved
+   encrypted channel.
+3. Place them at the exact paths listed above. The properties file refers to
+   the keystore using `keystores/movie-app-development.jks`.
+4. Restrict local access where supported:
+
+   ```sh
+   chmod 600 android/development-signing.properties \
+     android/keystores/movie-app-development.jks
+   ```
+
+5. Build or run the debug application normally. Gradle detects the local
+   properties file and signs debug builds with the shared certificate.
+
+To inspect the certificate without putting a password in shell history, run
+the following command and enter the shared store password when prompted:
+
+```sh
+keytool -list -v \
+  -alias movie-app-development \
+  -keystore android/keystores/movie-app-development.jks
+```
+
+The shared SHA-1 and SHA-256 fingerprints must be registered on the Android
+app (`com.example.movie_app`) in the Firebase project. After registration,
+download the refreshed `google-services.json` and replace
+`android/app/google-services.json` in a reviewed change. No teammate-specific
+fingerprint is needed while everyone uses this exact shared keystore.
+
+This development certificate must never be reused for Play Store or other
+production signing.
+
 ## Home screen implementation notes
 
 The Home tab follows Figma `Movies (Copy)`, frame `47:1248`.

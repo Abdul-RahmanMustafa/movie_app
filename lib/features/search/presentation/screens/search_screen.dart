@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../explore/presentation/widgets/explore_movie_card.dart';
 import '../../../movies/domain/entities/movie.dart';
 import '../../../movies/domain/entities/movie_list_query.dart';
 import '../../../movies/domain/movie_failure.dart';
 import '../../../movies/presentation/providers/movies_controller.dart';
+import '../../../movies/presentation/utils/movie_failure_localization.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key, this.moviesController});
@@ -81,14 +83,14 @@ class _SearchScreenState extends State<SearchScreen> {
       if (!mounted || requestId != _requestId) return;
       setState(() {
         _movies = const [];
-        _errorMessage = failure.message;
+        _errorMessage = localizedMovieFailure(context.l10n, failure);
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted || requestId != _requestId) return;
       setState(() {
         _movies = const [];
-        _errorMessage = 'Something went wrong while searching movies.';
+        _errorMessage = context.l10n.errorSearchMovies;
         _isLoading = false;
       });
     }
@@ -99,7 +101,6 @@ class _SearchScreenState extends State<SearchScreen> {
     final requestId = ++_requestId;
     _search(_activeQuery, requestId);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +142,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           fontWeight: FontWeight.w400,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Search movies',
+                          hintText: context.l10n.searchMovies,
                           hintStyle: const TextStyle(
                             color: Color(0xFFAAAAAA),
                             fontFamily: 'Roboto',
@@ -162,12 +163,12 @@ class _SearchScreenState extends State<SearchScreen> {
                           suffixIcon: _searchController.text.isEmpty
                               ? null
                               : IconButton(
-                            onPressed: () {
-                              _searchController.clear();
-                              _onQueryChanged('');
-                            },
-                            icon: const Icon(Icons.close),
-                          ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _onQueryChanged('');
+                                  },
+                                  icon: const Icon(Icons.close),
+                                ),
                           filled: true,
                           fillColor: AppColors.surface,
                           border: OutlineInputBorder(
@@ -190,9 +191,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.accent,
-                      ),
+                      child: CircularProgressIndicator(color: AppColors.accent),
                     ),
                   )
                 else if (_errorMessage != null)
@@ -211,63 +210,60 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                           TextButton(
                             onPressed: _retry,
-                            child: const Text('Try again'),
+                            child: Text(context.l10n.commonTryAgain),
                           ),
                         ],
                       ),
                     ),
                   )
                 else if (_activeQuery.isEmpty)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/profile/profile_popcorn.png',
-                          width: 124 * scale,
-                          height: 124 * scale,
-                          fit: BoxFit.contain,
-                        ),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/profile/profile_popcorn.png',
+                        width: 124 * scale,
+                        height: 124 * scale,
+                        fit: BoxFit.contain,
                       ),
-                    )
-                  else if (_movies.isEmpty)
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(
-                          child: Text(
-                            'No movies found for “$_activeQuery”.',
-                          ),
-                        ),
-                      )
-                    else
-                      SliverPadding(
-                        padding: EdgeInsets.fromLTRB(
-                          16 * scale,
-                          0,
-                          16 * scale,
-                          96 * scale,
-                        ),
-                        sliver: SliverGrid.builder(
-                          itemCount: _movies.length,
-                          gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 12 * scale,
-                            crossAxisSpacing: 12 * scale,
-                            childAspectRatio: 189 / 279,
-                          ),
-                          itemBuilder: (context, index) {
-                            final movie = _movies[index];
+                    ),
+                  )
+                else if (_movies.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Text(context.l10n.searchNoResults(_activeQuery)),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      16 * scale,
+                      0,
+                      16 * scale,
+                      96 * scale,
+                    ),
+                    sliver: SliverGrid.builder(
+                      itemCount: _movies.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12 * scale,
+                        crossAxisSpacing: 12 * scale,
+                        childAspectRatio: 189 / 279,
+                      ),
+                      itemBuilder: (context, index) {
+                        final movie = _movies[index];
 
-                            return ExploreMovieCard(
-                              key: Key('search_movie_${movie.id}'),
-                              movie: movie,
-                              index: index,
-                              scale: scale,
-                              onTap: () => context.push('/movie/${movie.id}'),
-                            );
-                          },
-                        ),
-                      ),
+                        return ExploreMovieCard(
+                          key: Key('search_movie_${movie.id}'),
+                          movie: movie,
+                          index: index,
+                          scale: scale,
+                          onTap: () => context.push('/movie/${movie.id}'),
+                        );
+                      },
+                    ),
+                  ),
               ],
             );
           },
@@ -275,5 +271,4 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-
 }
