@@ -79,13 +79,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         Image.asset(imagePath, fit: BoxFit.cover),
 
         if (pageIndex == 1)
-          Positioned(left: 0, right: 0, bottom: 0, child: _buildSecondPage(1))
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: screenHeight * 0.62),
+              child: _buildSecondPage(1),
+            ),
+          )
         else if (pageIndex >= 2 && pageIndex <= 5)
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildSecondPage(pageIndex),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: screenHeight * 0.62),
+              child: _buildSecondPage(pageIndex),
+            ),
           )
         else
           Positioned(
@@ -148,7 +159,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       decoration: const BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.only(
@@ -156,35 +166,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           topRight: Radius.circular(40),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            titles[pageIndex]!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          if (pageIndex != 5) ...[
-            const SizedBox(height: 12),
-            Text(
-              descriptions[pageIndex]!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 20,
-                fontWeight: FontWeight.w400,
-                color: Colors.white,
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                titles[pageIndex]!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ),
-          ],
-          const SizedBox(height: 20),
-          _buildButtons(pageIndex),
-        ],
+              if (pageIndex != 5) ...[
+                const SizedBox(height: 12),
+                Text(
+                  descriptions[pageIndex]!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              _buildButtons(pageIndex),
+            ],
+          ),
+        ),
       ),
     );
   }

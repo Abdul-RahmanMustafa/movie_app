@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../domain/auth_failure.dart';
@@ -54,6 +55,19 @@ abstract final class FirebaseFailureMapper {
     if (error is FirebaseAuthException) return fromAuth(error);
     if (error is! GoogleSignInException) return _unexpected;
 
+    if (kDebugMode) {
+      // Visible in `flutter logs` / logcat: the Play services code and message
+      // are what point at a missing SHA-1 fingerprint.
+      debugPrint(
+        'Google Sign-In failed: code=${error.code} '
+        'description=${error.description}',
+      );
+      debugPrint(
+        'If the description mentions UNREGISTERED_ON_API_CONSOLE, register '
+        'this build\'s SHA-1 in Firebase (docs/google-sign-in.md).',
+      );
+    }
+
     return switch (error.code) {
       GoogleSignInExceptionCode.canceled => const AuthFailure(
         type: AuthFailureType.cancelled,
@@ -80,7 +94,14 @@ abstract final class FirebaseFailureMapper {
             'The selected Google account does not match the current '
             'account. Please try again.',
       ),
-      _ => _unexpected,
+      // Play services reports an unregistered signing certificate as an
+      // unknown error, so do not collapse it into the generic message.
+      GoogleSignInExceptionCode.unknownError => const AuthFailure(
+        type: AuthFailureType.providerConfiguration,
+        message:
+            'Google Sign-In could not be completed. Please try again, or '
+            'sign in with your email and password.',
+      ),
     };
   }
 

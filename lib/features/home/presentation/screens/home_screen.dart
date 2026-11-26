@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/layout/app_layout.dart';
 import '../../../../core/localization/localization_extensions.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../movies/domain/entities/movie.dart';
 import '../../../movies/domain/entities/movie_list_query.dart';
 import '../../../movies/domain/movie_failure.dart';
@@ -88,58 +90,66 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scale = constraints.maxWidth / 430;
+        final scale = AppLayout.scaleForWidth(constraints.maxWidth);
+        final bottomPadding = AppLayout.bottomContentPadding(context, scale);
 
         // HomeHero owns the top SafeArea. The carousel is layered inside it,
         // not stacked below it, so the hero matches the Figma frame.
-        return SingleChildScrollView(
-          // Lets the page grow beyond the 932px design height on small devices.
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              HomeHero(
-                scale: scale,
-                movies: _featuredMovies,
-                isLoading: _isLoading,
-                errorMessage: _errorMessage,
-                onRetry: _loadMovies,
-                onMovieTap: _openMovie,
-              ),
-              SectionHeading(
-                scale: scale,
-                onSeeMore: widget.onExploreRequested,
-              ),
-              SizedBox(height: 12 * scale),
-              if (_isLoading)
-                SizedBox(
-                  height: 220 * scale,
-                  child: const Center(child: CircularProgressIndicator()),
-                )
-              else if (_errorMessage != null)
-                SizedBox(
-                  height: 220 * scale,
-                  child: Center(
-                    child: TextButton(
-                      onPressed: _loadMovies,
-                      child: Text(context.l10n.commonTryAgain),
-                    ),
-                  ),
-                )
-              else if (_actionMovies.isEmpty)
-                SizedBox(
-                  height: 220 * scale,
-                  child: Center(child: Text(context.l10n.homeNoActionMovies)),
-                )
-              else
-                MovieRow(
-                  movies: _actionMovies,
+        return RefreshIndicator(
+          color: AppColors.accent,
+          onRefresh: _loadMovies,
+          child: SingleChildScrollView(
+            // Lets the page grow beyond the 932px design height on small
+            // devices and still supports pull-to-refresh when it fits.
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                HomeHero(
                   scale: scale,
+                  movies: _featuredMovies,
+                  isLoading: _isLoading,
+                  errorMessage: _errorMessage,
+                  onRetry: _loadMovies,
                   onMovieTap: _openMovie,
                 ),
+                SectionHeading(
+                  scale: scale,
+                  onSeeMore: widget.onExploreRequested,
+                ),
+                SizedBox(height: 12 * scale),
+                if (_isLoading)
+                  SizedBox(
+                    height: 220 * scale,
+                    child: const Center(child: CircularProgressIndicator()),
+                  )
+                else if (_errorMessage != null)
+                  SizedBox(
+                    height: 220 * scale,
+                    child: Center(
+                      child: TextButton(
+                        onPressed: _loadMovies,
+                        child: Text(context.l10n.commonTryAgain),
+                      ),
+                    ),
+                  )
+                else if (_actionMovies.isEmpty)
+                  SizedBox(
+                    height: 220 * scale,
+                    child: Center(child: Text(context.l10n.homeNoActionMovies)),
+                  )
+                else
+                  MovieRow(
+                    movies: _actionMovies,
+                    scale: scale,
+                    onMovieTap: _openMovie,
+                  ),
 
-              // Extra space so the last card is not hidden behind the nav bar.
-              SizedBox(height: 96 * scale),
-            ],
+                // Extra space so the last card is not hidden behind the nav bar
+                // and the system gesture inset.
+                SizedBox(height: bottomPadding),
+              ],
+            ),
           ),
         );
       },

@@ -6,11 +6,13 @@ import 'package:movie_app/features/explore/presentation/widgets/explore_movie_ca
 
 import '../../../../helpers/fake_movies_controller.dart';
 import '../../../../helpers/localized_test_app.dart';
+import '../../../../helpers/test_surface.dart';
 
 void main() {
   testWidgets('renders API-backed movies in the Figma Browse grid', (
     tester,
   ) async {
+    usePhoneSurface(tester);
     await tester.pumpWidget(
       LocalizedTestApp(
         home: ExploreScreen(moviesController: FakeMoviesController()),
@@ -44,6 +46,7 @@ void main() {
   });
 
   testWidgets('top genre buttons move the selected highlight', (tester) async {
+    usePhoneSurface(tester);
     final controller = FakeMoviesController();
     await tester.pumpWidget(
       LocalizedTestApp(home: ExploreScreen(moviesController: controller)),

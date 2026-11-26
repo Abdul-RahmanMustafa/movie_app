@@ -16,7 +16,9 @@ import '../widgets/language_toggle.dart';
 import '../widgets/play_logo_painter.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.authController});
+
+  final AuthController? authController;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -26,7 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final formKey = GlobalKey<FormState>();
   final email = TextEditingController();
   final password = TextEditingController();
-  final AuthController _authController = AuthController.firebase();
+  late final AuthController _authController =
+      widget.authController ?? AuthController.firebase();
 
   bool _isLoading = false;
   bool _isGoogleLoading = false;

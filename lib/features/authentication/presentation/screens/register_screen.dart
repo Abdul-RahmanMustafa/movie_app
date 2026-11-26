@@ -15,7 +15,9 @@ import '../widgets/auth_field.dart';
 import '../widgets/language_toggle.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({super.key, this.authController});
+
+  final AuthController? authController;
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -30,7 +32,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final confirm = TextEditingController();
   final phone = TextEditingController();
 
-  final AuthController _authController = AuthController.firebase();
+  late final AuthController _authController =
+      widget.authController ?? AuthController.firebase();
 
   final PageController _avatarController = PageController(
     initialPage: 4,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/layout/app_layout.dart';
 import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../movies/domain/entities/movie.dart';
@@ -107,106 +108,136 @@ class ExploreScreenState extends State<ExploreScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scale = constraints.maxWidth / 430;
+        final scale = AppLayout.scaleForWidth(constraints.maxWidth);
+        final bottomPadding = AppLayout.bottomContentPadding(context, scale);
 
         return ColoredBox(
           color: AppColors.background,
           child: SafeArea(
             top: true,
             bottom: false,
-            child: SingleChildScrollView(
-              // Extra bottom padding keeps the last row clear of the shared
-              // bottom navigation bar drawn by MainShell.
-              padding: EdgeInsets.fromLTRB(
-                16 * scale,
-                16 * scale,
-                16 * scale,
-                96 * scale,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    height: 48 * scale,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _genreLabels.length,
-                      separatorBuilder: (_, _) => SizedBox(width: 8 * scale),
-                      itemBuilder: (context, index) {
-                        return ExploreGenreChip(
-                          key: Key('explore_genre_slot_$index'),
-                          label: context.l10n.genreLabel(_genreLabels[index]),
-                          width: _genreWidths[index] * scale,
-                          scale: scale,
-                          selected: index == _selectedGenreIndex,
-                          onTap: () => _selectGenre(index),
-                        );
-                      },
+            child: RefreshIndicator(
+              color: AppColors.accent,
+              onRefresh: _loadGenre,
+              child: CustomScrollView(
+                // Keeps pull-to-refresh available even when the grid is short.
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      16 * scale,
+                      16 * scale,
+                      16 * scale,
+                      0,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 48 * scale,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _genreLabels.length,
+                          separatorBuilder: (_, _) =>
+                              SizedBox(width: 8 * scale),
+                          itemBuilder: (context, index) {
+                            return ExploreGenreChip(
+                              key: Key('explore_genre_slot_$index'),
+                              label: context.l10n.genreLabel(
+                                _genreLabels[index],
+                              ),
+                              width: _genreWidths[index] * scale,
+                              scale: scale,
+                              selected: index == _selectedGenreIndex,
+                              onTap: () => _selectGenre(index),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ),
-
-                  SizedBox(height: 24 * scale),
-
+                  SliverToBoxAdapter(child: SizedBox(height: 24 * scale)),
                   if (_isLoading)
-                    SizedBox(
-                      height: 420 * scale,
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.accent,
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: SizedBox(
+                        height: 420 * scale,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.accent,
+                          ),
                         ),
                       ),
                     )
                   else if (_errorMessage != null)
-                    SizedBox(
-                      height: 420 * scale,
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_errorMessage!, textAlign: TextAlign.center),
-                            const SizedBox(height: 12),
-                            TextButton(
-                              onPressed: _loadGenre,
-                              child: Text(context.l10n.commonTryAgain),
-                            ),
-                          ],
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: SizedBox(
+                        height: 420 * scale,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16 * scale,
+                                ),
+                                child: Text(
+                                  _errorMessage!,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: _loadGenre,
+                                child: Text(context.l10n.commonTryAgain),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     )
                   else if (_movies.isEmpty)
-                    SizedBox(
-                      height: 420 * scale,
-                      child: Center(
-                        child: Text(
-                          context.l10n.exploreNoResults(
-                            context.l10n.genreLabel(
-                              _genreLabels[_selectedGenreIndex],
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: SizedBox(
+                        height: 420 * scale,
+                        child: Center(
+                          child: Text(
+                            context.l10n.exploreNoResults(
+                              context.l10n.genreLabel(
+                                _genreLabels[_selectedGenreIndex],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     )
                   else
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _movies.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12 * scale,
-                        crossAxisSpacing: 12 * scale,
-                        childAspectRatio: 189 / 279,
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(
+                        16 * scale,
+                        0,
+                        16 * scale,
+                        bottomPadding,
                       ),
-                      itemBuilder: (context, index) {
-                        final movie = _movies[index];
-                        return ExploreMovieCard(
-                          key: Key('explore_movie_slot_$index'),
-                          movie: movie,
-                          index: index,
-                          scale: scale,
-                          onTap: () => context.push('/movie/${movie.id}'),
-                        );
-                      },
+                      sliver: SliverGrid.builder(
+                        itemCount: _movies.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 12 * scale,
+                          crossAxisSpacing: 12 * scale,
+                          childAspectRatio: 189 / 279,
+                        ),
+                        itemBuilder: (context, index) {
+                          final movie = _movies[index];
+                          return ExploreMovieCard(
+                            key: Key('explore_movie_slot_$index'),
+                            movie: movie,
+                            index: index,
+                            scale: scale,
+                            onTap: () => context.push('/movie/${movie.id}'),
+                          );
+                        },
+                      ),
                     ),
                 ],
               ),

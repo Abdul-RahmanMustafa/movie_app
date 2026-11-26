@@ -19,7 +19,11 @@ class AuthController {
     required this._signOut,
   });
 
-  factory AuthController.firebase() {
+  factory AuthController.firebase() => _shared;
+
+  static final AuthController _shared = AuthController._build();
+
+  static AuthController _build() {
     final repository = AuthRepositoryImpl(
       FirebaseAuthDataSourceImpl(),
       FirestoreUserDataSourceImpl(),

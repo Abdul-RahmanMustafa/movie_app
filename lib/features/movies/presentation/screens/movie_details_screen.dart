@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/layout/app_layout.dart';
 import '../../../../core/localization/localization_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../home/presentation/widgets/movie_row.dart';
@@ -186,6 +187,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
 
     final movie = _movie!;
     final screenWidth = MediaQuery.sizeOf(context).width;
+    final scale = AppLayout.scaleForWidth(screenWidth);
     final heroHeight = (screenWidth * 1.22).clamp(430.0, 560.0).toDouble();
 
     return SingleChildScrollView(
@@ -277,191 +279,203 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  movie.title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontFamily: 'Roboto',
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  0,
+                  16,
+                  40 + MediaQuery.paddingOf(context).bottom,
                 ),
-                if (movie.year > 0) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    '${movie.year}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFFCCCCCC),
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 18),
-                SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: null,
-                    style: ElevatedButton.styleFrom(
-                      disabledBackgroundColor: const Color(0xFFE53935),
-                      disabledForegroundColor: AppColors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      context.l10n.movieWatch,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: _InfoBadge(
-                        icon: Icons.favorite,
-                        value: movie.likeCount?.toString() ?? '—',
+                    Text(
+                      movie.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontFamily: 'Roboto',
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _InfoBadge(
-                        icon: Icons.access_time_filled,
-                        value: movie.runtimeMinutes > 0
-                            ? '${movie.runtimeMinutes}'
-                            : '—',
+                    if (movie.year > 0) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        '${movie.year}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFFCCCCCC),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: null,
+                        style: ElevatedButton.styleFrom(
+                          disabledBackgroundColor: const Color(0xFFE53935),
+                          disabledForegroundColor: AppColors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          context.l10n.movieWatch,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _InfoBadge(
-                        icon: Icons.star,
-                        value: movie.rating > 0
-                            ? movie.rating.toStringAsFixed(1)
-                            : '—',
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _InfoBadge(
+                            icon: Icons.favorite,
+                            value: movie.likeCount?.toString() ?? '—',
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _InfoBadge(
+                            icon: Icons.access_time_filled,
+                            value: movie.runtimeMinutes > 0
+                                ? '${movie.runtimeMinutes}'
+                                : '—',
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _InfoBadge(
+                            icon: Icons.star,
+                            value: movie.rating > 0
+                                ? movie.rating.toStringAsFixed(1)
+                                : '—',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 26),
+                    _SectionTitle(context.l10n.movieScreenshots),
+                    const SizedBox(height: 12),
+                    if (movie.screenshotImageUrls.isEmpty)
+                      Text(
+                        context.l10n.movieNoScreenshots,
+                        style: const TextStyle(color: Color(0xFFAAAAAA)),
+                      )
+                    else
+                      SizedBox(
+                        height: 128,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: movie.screenshotImageUrls.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 12),
+                          itemBuilder: (context, index) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: SizedBox(
+                                width: 220,
+                                child: MoviePosterImage(
+                                  imageUrl: movie.screenshotImageUrls[index],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    const SizedBox(height: 28),
+                    _SectionTitle(context.l10n.movieSimilar),
+                    const SizedBox(height: 12),
+                    if (_suggestions.isEmpty)
+                      Text(
+                        context.l10n.movieNoSimilar,
+                        style: const TextStyle(color: Color(0xFFAAAAAA)),
+                      )
+                    else
+                      MovieRow(
+                        movies: _suggestions,
+                        scale: scale,
+                        onMovieTap: (suggestion) {
+                          context.pushReplacement('/movie/${suggestion.id}');
+                        },
+                      ),
+                    const SizedBox(height: 28),
+                    _SectionTitle(context.l10n.movieSummary),
+                    const SizedBox(height: 10),
+                    Text(
+                      movie.description.isEmpty
+                          ? context.l10n.movieNoSummary
+                          : movie.description,
+                      style: const TextStyle(
+                        color: Color(0xFFCCCCCC),
+                        fontSize: 15,
+                        height: 1.5,
                       ),
                     ),
+                    const SizedBox(height: 28),
+                    _SectionTitle(context.l10n.movieCast),
+                    const SizedBox(height: 12),
+                    if (movie.cast.isEmpty)
+                      Text(
+                        context.l10n.movieNoCast,
+                        style: const TextStyle(color: Color(0xFFAAAAAA)),
+                      )
+                    else
+                      SizedBox(
+                        height: 126,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: movie.cast.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 12),
+                          itemBuilder: (context, index) {
+                            return _CastCard(member: movie.cast[index]);
+                          },
+                        ),
+                      ),
+                    const SizedBox(height: 28),
+                    _SectionTitle(context.l10n.movieGenres),
+                    const SizedBox(height: 12),
+                    if (movie.genres.isEmpty)
+                      Text(
+                        context.l10n.movieNoGenres,
+                        style: const TextStyle(color: Color(0xFFAAAAAA)),
+                      )
+                    else
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: movie.genres
+                            .map(
+                              (genre) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 9,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  context.l10n.genreLabel(genre),
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
                   ],
                 ),
-                const SizedBox(height: 26),
-                _SectionTitle(context.l10n.movieScreenshots),
-                const SizedBox(height: 12),
-                if (movie.screenshotImageUrls.isEmpty)
-                  Text(
-                    context.l10n.movieNoScreenshots,
-                    style: const TextStyle(color: Color(0xFFAAAAAA)),
-                  )
-                else
-                  SizedBox(
-                    height: 128,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: movie.screenshotImageUrls.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 12),
-                      itemBuilder: (context, index) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: SizedBox(
-                            width: 220,
-                            child: MoviePosterImage(
-                              imageUrl: movie.screenshotImageUrls[index],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                const SizedBox(height: 28),
-                _SectionTitle(context.l10n.movieSimilar),
-                const SizedBox(height: 12),
-                if (_suggestions.isEmpty)
-                  Text(
-                    context.l10n.movieNoSimilar,
-                    style: const TextStyle(color: Color(0xFFAAAAAA)),
-                  )
-                else
-                  MovieRow(
-                    movies: _suggestions,
-                    scale: 1,
-                    onMovieTap: (suggestion) {
-                      context.pushReplacement('/movie/${suggestion.id}');
-                    },
-                  ),
-                const SizedBox(height: 28),
-                _SectionTitle(context.l10n.movieSummary),
-                const SizedBox(height: 10),
-                Text(
-                  movie.description.isEmpty
-                      ? context.l10n.movieNoSummary
-                      : movie.description,
-                  style: const TextStyle(
-                    color: Color(0xFFCCCCCC),
-                    fontSize: 15,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                _SectionTitle(context.l10n.movieCast),
-                const SizedBox(height: 12),
-                if (movie.cast.isEmpty)
-                  Text(
-                    context.l10n.movieNoCast,
-                    style: const TextStyle(color: Color(0xFFAAAAAA)),
-                  )
-                else
-                  SizedBox(
-                    height: 126,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: movie.cast.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 12),
-                      itemBuilder: (context, index) {
-                        return _CastCard(member: movie.cast[index]);
-                      },
-                    ),
-                  ),
-                const SizedBox(height: 28),
-                _SectionTitle(context.l10n.movieGenres),
-                const SizedBox(height: 12),
-                if (movie.genres.isEmpty)
-                  Text(
-                    context.l10n.movieNoGenres,
-                    style: const TextStyle(color: Color(0xFFAAAAAA)),
-                  )
-                else
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: movie.genres
-                        .map(
-                          (genre) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 9,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              context.l10n.genreLabel(genre),
-                              style: const TextStyle(color: AppColors.white),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-              ],
+              ),
             ),
           ),
         ],
@@ -567,14 +581,7 @@ class _CastCard extends StatelessWidget {
                       color: AppColors.surface,
                       child: Icon(Icons.person, color: AppColors.accent),
                     )
-                  : Image.network(
-                      member.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const ColoredBox(
-                        color: AppColors.surface,
-                        child: Icon(Icons.person, color: AppColors.accent),
-                      ),
-                    ),
+                  : MoviePosterImage(imageUrl: member.imageUrl),
             ),
           ),
           const SizedBox(height: 7),

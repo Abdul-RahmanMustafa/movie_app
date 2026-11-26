@@ -42,6 +42,18 @@ class _MovieAppState extends State<MovieApp> {
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           routerConfig: widget.routerConfig ?? AppRouter.router,
+          builder: (context, child) {
+            final mediaQuery = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQuery.copyWith(
+                textScaler: mediaQuery.textScaler.clamp(
+                  minScaleFactor: 0.9,
+                  maxScaleFactor: 1.2,
+                ),
+              ),
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
         ),
       ),
     );
