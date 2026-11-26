@@ -123,13 +123,30 @@ class _SearchScreenState extends State<SearchScreen> {
                       controller: _searchController,
                       onChanged: _onQueryChanged,
                       textInputAction: TextInputAction.search,
-                      style: const TextStyle(color: AppColors.white),
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontFamily: 'Roboto',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Search movies',
-                        hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: AppColors.accent,
+                        hintStyle: const TextStyle(
+                          color: Color(0xFFAAAAAA),
+                          fontFamily: 'Roboto',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Image.asset(
+                            'assets/images/home/ic_vector.png',
+                            color: Focus.of(context).hasFocus
+                                ? AppColors.accent
+                                : AppColors.white,
+                            width: 24,
+                            height: 24,
+                          ),
                         ),
                         suffixIcon: _searchController.text.isEmpty
                             ? null
@@ -184,10 +201,17 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   )
                 else if (_activeQuery.isEmpty)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: Text('Search for a movie by title.')),
-                  )
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/profile/profile_popcorn.png',
+                          width: 124 * scale,
+                          height: 124 * scale,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    )
                 else if (_movies.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,

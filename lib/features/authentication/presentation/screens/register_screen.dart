@@ -1,3 +1,6 @@
+
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,20 +15,35 @@ import '../widgets/language_toggle.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final formKey = GlobalKey<FormState>();
+
   final name = TextEditingController();
   final email = TextEditingController();
   final password = TextEditingController();
   final confirm = TextEditingController();
   final phone = TextEditingController();
+
   final AuthController _authController = AuthController.firebase();
-  int avatar = 1;
+
+  final PageController _avatarController = PageController(
+    initialPage: 4,
+    viewportFraction: 0.34,
+  );
+
+  int avatar = 4;
   bool _isLoading = false;
+
+  static const TextStyle _textStyle = TextStyle(
+    fontFamily: 'Roboto',
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+  );
 
   String? _intendedDestination() {
     return AuthNavigation.safeProtectedDestination(
@@ -35,9 +53,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _submitRegistration() async {
     if (_isLoading || !formKey.currentState!.validate()) return;
+
+    FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
     AuthFailure? failure;
+
     try {
       await _authController.register(
         name: name.text,
@@ -56,12 +77,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     if (!mounted) return;
+
     setState(() => _isLoading = false);
 
     if (failure != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(failure.message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            failure.message,
+            style: _textStyle,
+          ),
+        ),
+      );
       return;
     }
 
@@ -70,187 +97,286 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    for (final c in [name, email, password, confirm, phone]) {
-      c.dispose();
+    _avatarController.dispose();
+
+    for (final controller in [
+      name,
+      email,
+      password,
+      confirm,
+      phone,
+    ]) {
+      controller.dispose();
     }
+
     super.dispose();
   }
 
+  Widget _buildAvatarCarousel(double scale) {
+    return SizedBox(
+      height: 136 * scale,
+      child: PageView.builder(
+        controller: _avatarController,
+        itemCount: 9,
+        onPageChanged: (index) {
+          setState(() => avatar = index);
+        },
+        itemBuilder: (context, index) {
+          return AnimatedBuilder(
+            animation: _avatarController,
+            builder: (context, child) {
+              final currentPage = _avatarController.hasClients
+                  ? (_avatarController.page ?? avatar.toDouble())
+                  : avatar.toDouble();
+
+              final distance =
+              (currentPage - index).abs().clamp(0.0, 1.0);
+
+              final size =
+                  (136.0 - (42.0 * distance)) * scale;
+
+              return Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: size,
+                  height: size,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/profile/profile${index + 1}.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: authBackground,
-    body: SafeArea(
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Form(
-              key: formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      IconButton(
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.sizeOf(context);
+
+    final scale = math.min(
+      1.0,
+      math.min(
+        screenSize.width / 430,
+        screenSize.height / 932,
+      ),
+    );
+
+    return Scaffold(
+      backgroundColor: authBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Fixed AppBar
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 24 * scale,
+              ),
+              child: SizedBox(
+                height: 48 * scale,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 48 * scale,
+                      child: IconButton(
                         onPressed: _isLoading
                             ? null
                             : () => context.go(
-                                AuthNavigation.routeWithDestination(
-                                  '/login',
-                                  _intendedDestination(),
-                                ),
-                              ),
-                        icon: const Icon(Icons.arrow_back, color: authYellow),
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'Register',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: authYellow, fontSize: 14),
+                          AuthNavigation.routeWithDestination(
+                            '/login',
+                            _intendedDestination(),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 48),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: List.generate(
-                      3,
-                      (i) => GestureDetector(
-                        onTap: () => setState(() => avatar = i),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          width: i == avatar ? 112 : 74,
-                          height: i == avatar ? 112 : 74,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: [
-                              const Color(0xFFB6E9FC),
-                              const Color(0xFF8DD5F1),
-                              const Color(0xFFB5E7F5),
-                            ][i],
-                            border: Border.all(
-                              color: avatar == i
-                                  ? authYellow
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              [Icons.face_6, Icons.face, Icons.face_3][i],
-                              color: [
-                                Colors.teal,
-                                Colors.deepOrange,
-                                Colors.brown,
-                              ][i],
-                              size: i == avatar ? 76 : 48,
-                            ),
-                          ),
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: authYellow,
+                          size: 24 * scale,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Text('Avatar', style: TextStyle(fontSize: 13)),
-                  ),
-                  const SizedBox(height: 12),
-                  AuthField(
-                    controller: name,
-                    hint: 'Name',
-                    icon: Icons.badge_outlined,
-                    validator: requiredValidator,
-                  ),
-                  const SizedBox(height: 14),
-                  AuthField(
-                    controller: email,
-                    hint: 'Email',
-                    icon: Icons.email,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: emailValidator,
-                  ),
-                  const SizedBox(height: 14),
-                  AuthField(
-                    controller: password,
-                    hint: 'Password',
-                    icon: Icons.lock,
-                    obscure: true,
-                    validator: passwordValidator,
-                  ),
-                  const SizedBox(height: 14),
-                  AuthField(
-                    controller: confirm,
-                    hint: 'Confirm Password',
-                    icon: Icons.lock,
-                    obscure: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Confirm your password';
-                      }
-                      if (value != password.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  AuthField(
-                    controller: phone,
-                    hint: 'Phone Number',
-                    icon: Icons.phone,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) =>
-                        value == null ||
-                            !RegExp(r'^\+?[0-9]{10,15}$').hasMatch(value.trim())
-                        ? 'Enter a valid phone number'
-                        : null,
-                  ),
-                  const SizedBox(height: 18),
-                  AuthButton(
-                    text: 'Create Account',
-                    isLoading: _isLoading,
-                    onPressed: _submitRegistration,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Already Have Account ? ',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      GestureDetector(
-                        onTap: _isLoading
-                            ? null
-                            : () => context.go(
-                                AuthNavigation.routeWithDestination(
-                                  '/login',
-                                  _intendedDestination(),
-                                ),
-                              ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
-                            color: authYellow,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    const Expanded(
+                      child: Text(
+                        'Register',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: authYellow,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  const Center(child: LanguageToggle()),
-                ],
+                    ),
+                    SizedBox(width: 48 * scale),
+                  ],
+                ),
               ),
             ),
-          ),
+
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24 * scale,
+                  vertical: 18 * scale,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: 400 * scale,
+                    ),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.stretch,
+                        children: [
+                          _buildAvatarCarousel(scale),
+
+                          SizedBox(height: 8 * scale),
+
+                          const Center(
+                            child: Text(
+                              'Avatar',
+                              style: _textStyle,
+                            ),
+                          ),
+
+                          SizedBox(height: 12 * scale),
+
+                          AuthField(
+                            controller: name,
+                            hint: 'Name',
+                            iconPath: 'assets/images/auth/ic_name.svg',
+
+                            validator: requiredValidator,
+                          ),
+
+                          SizedBox(height: 14 * scale),
+
+                          AuthField(
+                            controller: email,
+                            hint: 'Email',
+                            iconPath:
+                            'assets/images/auth/ic_email.png',
+                            keyboardType:
+                            TextInputType.emailAddress,
+                            validator: emailValidator,
+                          ),
+
+                          SizedBox(height: 14 * scale),
+
+                          AuthField(
+                            controller: password,
+                            hint: 'Password',
+                            iconPath:
+                            'assets/images/auth/ic_lock.png',
+                            obscure: true,
+                            validator: passwordValidator,
+                          ),
+
+                          SizedBox(height: 14 * scale),
+
+                          AuthField(
+                            controller: confirm,
+                            hint: 'Confirm Password',
+                            iconPath:
+                            'assets/images/auth/ic_lock.png',
+                            obscure: true,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Confirm your password';
+                              }
+
+                              if (value != password.text) {
+                                return 'Passwords do not match';
+                              }
+
+                              return null;
+                            },
+                          ),
+
+                          SizedBox(height: 14 * scale),
+
+                          AuthField(
+                            controller: phone,
+                            hint: 'Phone Number',
+                            iconPath: 'assets/images/auth/ic_phone.svg',
+                            keyboardType: TextInputType.phone,
+                            validator: (value) {
+                              if (value == null ||
+                                  !RegExp(r'^\+?[0-9]{10,15}$')
+                                      .hasMatch(value.trim())) {
+                                return 'Enter a valid phone number';
+                              }
+
+                              return null;
+                            },
+                          ),
+
+                          SizedBox(height: 18 * scale),
+
+                          AuthButton(
+                            text: 'Create Account',
+                            fontSize: 20,
+                            isLoading: _isLoading,
+                            onPressed: _submitRegistration,
+                          ),
+
+                          SizedBox(height: 16 * scale),
+
+                          Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Already Have Account ? ',
+                                  style: _textStyle.copyWith(fontSize: 14),
+                              ),
+                              GestureDetector(
+                                onTap: _isLoading
+                                    ? null
+                                    : () => context.go(
+                                  AuthNavigation
+                                      .routeWithDestination(
+                                    '/login',
+                                    _intendedDestination(),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: authYellow,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: 18 * scale),
+
+                          const Center(
+                            child: LanguageToggle(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-    ),
-  );
+    );
+  }
 }

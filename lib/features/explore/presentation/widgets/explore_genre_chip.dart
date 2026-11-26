@@ -28,7 +28,7 @@ class ExploreGenreChip extends StatelessWidget {
       width: width,
       height: 48 * scale,
       child: Material(
-        color: AppColors.surface,
+          color: selected ? AppColors.accent : AppColors.background,
         borderRadius: BorderRadius.circular(12 * scale),
         child: InkWell(
           onTap: onTap,
@@ -37,7 +37,7 @@ class ExploreGenreChip extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12 * scale),
               border: Border.all(
-                color: selected ? AppColors.accent : AppColors.surface,
+                color: AppColors.accent,
                 width: 1.2 * scale,
               ),
             ),
@@ -45,10 +45,10 @@ class ExploreGenreChip extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: AppColors.white,
-                fontFamily: 'Roboto',
-                fontSize: 16 * scale,
-                fontWeight: FontWeight.w500,
+                color: selected ? AppColors.background : AppColors.accent,
+                fontFamily: 'Inter',
+                fontSize: 20 * scale,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
