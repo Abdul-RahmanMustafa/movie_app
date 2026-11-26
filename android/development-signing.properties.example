@@ -1,0 +1,7 @@
+# Copy this file to development-signing.properties only when setting up the
+# shared Android development certificate. The copied file and keystore are
+# intentionally ignored by Git.
+storeFile=keystores/movie-app-development.jks
+storePassword=REPLACE_WITH_SHARED_STORE_PASSWORD
+keyAlias=movie-app-development
+keyPassword=REPLACE_WITH_SHARED_KEY_PASSWORD

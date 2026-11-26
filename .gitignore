@@ -60,6 +60,12 @@ unlinked_spec.ds
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+*.keystore
+
+# Shared Android development signing material. Distribute these files through
+# a team password manager or another encrypted channel; never commit them.
+/android/development-signing.properties
+/android/keystores/
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -127,3 +133,9 @@ app.*.symbols
 *.iml
 
 .DS_Store
+
+# Local duplicate Firebase downloads (platform copies remain tracked).
+/GoogleService-Info.json
+/GoogleService-Info.plist
+/google-services.json
+/google-services (1).json
