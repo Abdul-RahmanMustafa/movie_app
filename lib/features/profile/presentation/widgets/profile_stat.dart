@@ -1,9 +1,8 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// Number + caption block. Both texts live in one narrow centred column, so
-/// there is no loose gap between the count and what it counts.
 class ProfileStat extends StatelessWidget {
   const ProfileStat({
     super.key,
@@ -25,7 +24,7 @@ class ProfileStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final content = SizedBox(
-      width: 82 * scale,
+      width: 100 * scale,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -36,27 +35,38 @@ class ProfileStat extends StatelessWidget {
             style: TextStyle(
               color: AppColors.white,
               fontFamily: 'Roboto',
-              fontSize: 25 * scale,
-              fontWeight: FontWeight.w600,
+              fontSize: 36 * scale,
+              fontWeight: FontWeight.w400,
               height: 1,
             ),
           ),
-          SizedBox(height: 8 * scale),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.white,
-              fontFamily: 'Roboto',
-              fontSize: 14 * scale,
-              fontWeight: FontWeight.w600,
-              height: 1,
+          SizedBox(height: 20 * scale),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              softWrap: false,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.white,
+                fontFamily: 'Roboto',
+                fontSize: 24 * scale,
+                fontWeight: FontWeight.w700,
+                height: 1,
+              ),
             ),
           ),
         ],
       ),
     );
+
     if (!positioned) return content;
-    return Positioned(left: centerX - 41 * scale, top: top, child: content);
+
+    return Positioned(
+      left: centerX - 50 * scale,
+      top: top,
+      child: content,
+    );
   }
 }

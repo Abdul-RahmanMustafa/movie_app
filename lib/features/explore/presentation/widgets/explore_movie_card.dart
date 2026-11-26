@@ -31,10 +31,6 @@ class ExploreMovieCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.surface,
-              border: Border.all(
-                color: AppColors.accent.withAlpha(90),
-                width: 1 * scale,
-              ),
               borderRadius: BorderRadius.circular(12 * scale),
             ),
             child: Stack(
@@ -52,7 +48,7 @@ class ExploreMovieCard extends StatelessWidget {
                 ),
                 Positioned(
                   top: 8 * scale,
-                  right: 8 * scale,
+                  left: 8 * scale,
                   child: Container(
                     key: Key('explore_rating_slot_$index'),
                     padding: EdgeInsets.symmetric(
@@ -66,19 +62,19 @@ class ExploreMovieCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.star,
-                          color: AppColors.accent,
-                          size: 12 * scale,
-                        ),
                         SizedBox(width: 3 * scale),
                         Text(
                           movie.rating.toStringAsFixed(1),
                           style: TextStyle(
                             color: AppColors.white,
                             fontFamily: 'Roboto',
-                            fontSize: 12 * scale,
+                            fontSize: 16 * scale,
                           ),
+                        ),
+                        Icon(
+                          Icons.star,
+                          color: AppColors.accent,
+                          size: 16 * scale,
                         ),
                       ],
                     ),

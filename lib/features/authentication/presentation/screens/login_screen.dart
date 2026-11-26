@@ -1,3 +1,6 @@
+
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,6 +16,7 @@ import '../widgets/play_logo_painter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -22,10 +26,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final email = TextEditingController();
   final password = TextEditingController();
   final AuthController _authController = AuthController.firebase();
+
   bool _isLoading = false;
   bool _isGoogleLoading = false;
 
   bool get _isBusy => _isLoading || _isGoogleLoading;
+
+  static const TextStyle _textStyle = TextStyle(
+    fontFamily: 'Roboto',
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+  );
 
   String? _intendedDestination() {
     return AuthNavigation.safeProtectedDestination(
@@ -37,11 +48,15 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isBusy || !formKey.currentState!.validate()) {
       return;
     }
+
     setState(() => _isLoading = true);
 
     AuthFailure? failure;
     try {
-      await _authController.login(email: email.text, password: password.text);
+      await _authController.login(
+        email: email.text,
+        password: password.text,
+      );
     } on AuthFailure catch (error) {
       failure = error;
     } catch (_) {
@@ -55,9 +70,11 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (failure != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(failure.message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(failure.message, style: _textStyle),
+        ),
+      );
       return;
     }
 
@@ -66,6 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _submitGoogleLogin() async {
     if (_isBusy) return;
+
     setState(() => _isGoogleLoading = true);
 
     AuthFailure? failure;
@@ -85,9 +103,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (failure != null) {
       if (failure.type != AuthFailureType.cancelled) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(failure.message)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(failure.message, style: _textStyle),
+          ),
+        );
       }
       return;
     }
@@ -111,126 +131,186 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: authBackground,
-    body: SafeArea(
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Form(
-              key: formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 14),
-                  Center(
-                    child: SizedBox(
-                      height: 120,
-                      width: 120,
-                      child: CustomPaint(painter: PlayLogoPainter()),
-                    ),
-                  ),
-                  const SizedBox(height: 42),
-                  AuthField(
-                    controller: email,
-                    hint: 'Email',
-                    icon: Icons.email,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: emailValidator,
-                  ),
-                  const SizedBox(height: 16),
-                  AuthField(
-                    controller: password,
-                    hint: 'Password',
-                    icon: Icons.lock,
-                    obscure: true,
-                    validator: requiredValidator,
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _isBusy ? null : _openForgotPassword,
-                      child: const Text(
-                        'Forget Password ?',
-                        style: TextStyle(color: authYellow, fontSize: 12),
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.sizeOf(context);
+    final safeTop = MediaQuery.viewPaddingOf(context).top;
+
+    final scale = math.min(
+      1.0,
+      math.min(
+        screenSize.width / 430,
+        screenSize.height / 932,
+      ),
+    );
+
+    final topSpacing = math.max(
+      0.0,
+      (67 * scale) - safeTop,
+    );
+
+    return Scaffold(
+      backgroundColor: authBackground,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: 24 * scale,
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 400 * scale,
+              ),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(height: topSpacing),
+
+                    Center(
+                      child: SizedBox(
+                        height: 120 * scale,
+                        width: 120 * scale,
+                        child: CustomPaint(
+                          painter: PlayLogoPainter(),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  AuthButton(
-                    text: 'Login',
-                    isLoading: _isLoading,
-                    onPressed: _submitLogin,
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Don't Have Account ? ",
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      GestureDetector(
-                        onTap: _isBusy
-                            ? null
-                            : () => context.go(
-                                AuthNavigation.routeWithDestination(
-                                  '/register',
-                                  _intendedDestination(),
-                                ),
-                              ),
+
+                    SizedBox(height: 69 * scale),
+
+                    AuthField(
+                      controller: email,
+                      hint: 'Email',
+                      iconPath: 'assets/images/auth/ic_email.png',
+                      keyboardType: TextInputType.emailAddress,
+                      validator: emailValidator,
+                    ),
+
+                    SizedBox(height: 22.5 * scale),
+
+                    AuthField(
+                      controller: password,
+                      hint: 'Password',
+                      iconPath: 'assets/images/auth/ic_lock.png',
+                      obscure: true,
+                      validator: requiredValidator,
+                    ),
+
+                    SizedBox(height: 10 * scale),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _isBusy ? null : _openForgotPassword,
                         child: const Text(
-                          'Create One',
+                          'Forget Password ?',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontFamily: 'Roboto',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
                             color: authYellow,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Divider(color: authYellow, indent: 65),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          'OR',
-                          style: TextStyle(color: authYellow, fontSize: 12),
-                        ),
-                      ),
-                      const Expanded(
-                        child: Divider(color: authYellow, endIndent: 65),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  AuthButton(
-                    text: 'Login With Google',
-                    isLoading: _isGoogleLoading,
-                    leading: const Text(
-                      'G',
-                      style: TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.w900,
-                      ),
                     ),
-                    onPressed: _submitGoogleLogin,
-                  ),
-                  const SizedBox(height: 28),
-                  const Center(child: LanguageToggle()),
-                ],
+
+                    SizedBox(height: 33 * scale),
+
+                    AuthButton(
+                      text: 'Login',
+                      isLoading: _isLoading,
+                      onPressed: _submitLogin,
+                    ),
+
+                    SizedBox(height: 23 * scale),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Don't Have Account ? ",
+                          style: _textStyle,
+                        ),
+                        GestureDetector(
+                          onTap: _isBusy
+                              ? null
+                              : () => context.go(
+                            AuthNavigation.routeWithDestination(
+                              '/register',
+                              _intendedDestination(),
+                            ),
+                          ),
+                          child: const Text(
+                            'Create One',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: authYellow,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 28 * scale),
+
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Divider(
+                            color: authYellow,
+                            indent: 65,
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: authYellow,
+                            ),
+                          ),
+                        ),
+                        const Expanded(
+                          child: Divider(
+                            color: authYellow,
+                            endIndent: 65,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 28 * scale),
+
+                    AuthButton(
+                      text: 'Login With Google',
+                      isLoading: _isGoogleLoading,
+                      leading: Image.asset(
+                        'assets/images/auth/ic_google.png',
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.contain,
+                      ),
+                      onPressed: _submitGoogleLogin,
+                    ),
+
+                    SizedBox(height: 33 * scale),
+
+                    const Center(
+                      child: LanguageToggle(),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

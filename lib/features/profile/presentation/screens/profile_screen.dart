@@ -164,34 +164,39 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final scale = (constraints.maxWidth / 430)
-              .clamp(0.82, 1.2)
-              .toDouble();
-          return Column(
-            children: [
-              _buildHeader(scale),
-              _buildTabs(scale),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    16 * scale,
-                    14 * scale,
-                    16 * scale,
-                    82 * scale,
-                  ),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    child: _buildSectionContent(scale),
+    return DefaultTextStyle.merge(style: const TextStyle(
+      fontFamily: 'Roboto',
+      fontWeight: FontWeight.w400,
+    ),
+      child: SafeArea(
+        bottom: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final scale = (constraints.maxWidth / 430)
+                .clamp(0.82, 1.2)
+                .toDouble();
+            return Column(
+              children: [
+                _buildHeader(scale),
+                _buildTabs(scale),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      16 * scale,
+                      14 * scale,
+                      16 * scale,
+                      82 * scale,
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      child: _buildSectionContent(scale),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -209,10 +214,10 @@ class ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                width: 116 * scale,
+                width: 130 * scale,
                 child: Column(
                   children: [
                     if (_profileLoading)
@@ -227,7 +232,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                     else
                       ProfileAvatar(
                         avatarIndex: profile?.avatarIndex ?? 0,
-                        size: 82 * scale,
+                          size: 118 * scale,
                       ),
                     SizedBox(height: 8 * scale),
                     Text(
@@ -237,8 +242,9 @@ class ProfileScreenState extends State<ProfileScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.white,
-                        fontSize: 15 * scale,
-                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Roboto',
+                        fontSize: 20 * scale,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -250,7 +256,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                 top: 0,
                 centerX: 0,
                 number: '${_watchlist.length}',
-                label: 'Watch List',
+                label: 'Wish List',
                 positioned: false,
               ),
               SizedBox(width: 30 * scale),
@@ -292,7 +298,14 @@ class ProfileScreenState extends State<ProfileScreen> {
                         borderRadius: BorderRadius.circular(12 * scale),
                       ),
                     ),
-                    child: const Text('Edit Profile'),
+                    child: Text(
+                      'Edit Profile',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 20 * scale,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -300,26 +313,36 @@ class ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: SizedBox(
                   height: 48 * scale,
-                  child: ElevatedButton.icon(
-                    onPressed: _isSigningOut ? null : _signOut,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _danger,
-                      foregroundColor: AppColors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12 * scale),
+                  child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: ElevatedButton.icon(
+                      onPressed: _isSigningOut ? null : _signOut,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _danger,
+                        foregroundColor: AppColors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12 * scale),
+                        ),
                       ),
+                      icon: _isSigningOut
+                          ? SizedBox(
+                        width: 16 * scale,
+                        height: 16 * scale,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.white,
+                        ),
+                      )
+                          : Icon(Icons.logout, size: 18 * scale),
+                        label: Text(
+                          _isSigningOut ? '' : 'Exit',
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 20 * scale,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
                     ),
-                    icon: _isSigningOut
-                        ? SizedBox(
-                            width: 16 * scale,
-                            height: 16 * scale,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.white,
-                            ),
-                          )
-                        : Icon(Icons.logout, size: 18 * scale),
-                    label: Text(_isSigningOut ? '' : 'Exit'),
                   ),
                 ),
               ),
@@ -378,12 +401,17 @@ class ProfileScreenState extends State<ProfileScreen> {
               Icon(
                 icon,
                 color: selected ? AppColors.accent : AppColors.white,
-                size: 24 * scale,
+                size: 28 * scale,
               ),
               SizedBox(height: 4 * scale),
               Text(
                 label,
-                style: TextStyle(color: AppColors.white, fontSize: 14 * scale),
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontFamily: 'Roboto',
+                  fontSize: 20 * scale,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ],
           ),

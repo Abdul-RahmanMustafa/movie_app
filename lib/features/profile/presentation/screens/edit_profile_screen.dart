@@ -1,3 +1,4 @@
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -32,8 +33,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+
   late final ProfileController _profileController =
       widget.profileController ?? ProfileDependencies.controller;
+
   late final AuthController _authController =
       widget.authController ?? AuthController.firebase();
 
@@ -62,17 +65,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _observeProfile() {
     unawaited(_profileSubscription?.cancel());
+
     setState(() {
       _isLoading = true;
       _loadError = null;
     });
+
     _profileSubscription = _profileController.observeProfile().listen(
-      (profile) {
+          (profile) {
         if (!mounted) return;
+
         setState(() {
           _profile = profile;
           _isLoading = false;
           _loadError = null;
+
           if (!_fieldsInitialized) {
             _nameController.text = profile.name;
             _phoneController.text = profile.phone;
@@ -83,6 +90,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       },
       onError: (Object error) {
         if (!mounted) return;
+
         setState(() {
           _isLoading = false;
           _loadError = error is ProfileFailure
@@ -95,14 +103,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _save() async {
     if (_isSaving || !_formKey.currentState!.validate()) return;
+
     setState(() => _isSaving = true);
+
     try {
       await _profileController.updateProfile(
         name: _nameController.text,
         phone: _phoneController.text,
         avatarIndex: _avatarIndex,
       );
+
       if (!mounted) return;
+
       _showMessage('Profile updated successfully.');
     } on ProfileFailure catch (failure) {
       if (!mounted) return;
@@ -117,15 +129,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _resetPassword() async {
     final email = _profile?.email.trim() ?? '';
+
     if (_isResettingPassword) return;
+
     if (email.isEmpty) {
       _showMessage('No email address is available for this account.');
       return;
     }
+
     setState(() => _isResettingPassword = true);
+
     try {
       await _authController.sendPasswordResetEmail(email);
+
       if (!mounted) return;
+
       _showMessage(
         'Password reset email sent. Check your inbox and spam folder.',
       );
@@ -145,9 +163,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            fontFamily: 'Roboto',
+            fontSize: 20,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _pickAvatar() async {
@@ -163,42 +190,55 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Pick Avatar',
-                style: TextStyle(
-                  color: AppColors.accent,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
               const SizedBox(height: 20),
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   mainAxisSpacing: 14,
                   crossAxisSpacing: 14,
+                  childAspectRatio: 1,
                 ),
                 itemCount: 9,
                 itemBuilder: (context, index) {
-                  final selected = index == _avatarIndex;
+                  final isSelected = index == _avatarIndex;
+
                   return InkWell(
                     onTap: () => Navigator.of(context).pop(index),
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius: BorderRadius.circular(16),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 160),
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
+                        color: isSelected
+                            ? AppColors.accent
+                            : const Color(0xFF2A2A2A),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: selected
-                              ? AppColors.accent
-                              : Colors.transparent,
-                          width: 3,
+                          color: AppColors.accent,
+                          width: 2,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                          BoxShadow(
+                            color: AppColors.accent.withValues(
+                              alpha: 0.18,
+                            ),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                            : [],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(11),
+                        child: ProfileAvatar(
+                          avatarIndex: index,
+                          size: 72,
                         ),
                       ),
-                      child: ProfileAvatar(avatarIndex: index, size: 72),
                     ),
                   );
                 },
@@ -208,6 +248,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
     );
+
     if (selected != null && mounted) {
       setState(() => _avatarIndex = selected);
     }
@@ -222,9 +263,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           builder: (context, constraints) {
             if (_isLoading) {
               return const Center(
-                child: CircularProgressIndicator(color: AppColors.accent),
+                child: CircularProgressIndicator(
+                  color: AppColors.accent,
+                ),
               );
             }
+
             if (_loadError != null) {
               return Center(
                 child: Padding(
@@ -232,11 +276,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_loadError!, textAlign: TextAlign.center),
+                      Text(
+                        _loadError!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.white,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: _observeProfile,
-                        child: const Text('Try again'),
+                        child: const Text(
+                          'Try again',
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -271,7 +331,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: AppColors.accent,
-                                  fontSize: 15,
+                                  fontFamily: 'Roboto',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                             ),
@@ -288,7 +350,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               children: [
                                 ProfileAvatar(
                                   avatarIndex: _avatarIndex,
-                                  size: 112,
+                                  size: 150,
                                 ),
                                 Container(
                                   padding: const EdgeInsets.all(6),
@@ -328,10 +390,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           keyboardType: TextInputType.phone,
                           validator: (value) {
                             final phone = value?.trim() ?? '';
+
                             if (phone.isNotEmpty &&
-                                !RegExp(r'^\+?[0-9]{8,15}$').hasMatch(phone)) {
+                                !RegExp(r'^\+?[0-9]{8,15}$')
+                                    .hasMatch(phone)) {
                               return 'Enter a valid phone number';
                             }
+
                             return null;
                           },
                         ),
@@ -343,18 +408,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 : _resetPassword,
                             style: TextButton.styleFrom(
                               foregroundColor: AppColors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                              ),
                             ),
                             child: _isResettingPassword
                                 ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.accent,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Text('Reset Password'),
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: AppColors.accent,
+                                strokeWidth: 2,
+                              ),
+                            )
+                                : const Text(
+                              'Reset Password',
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
                           ),
                         ),
                         const Spacer(),
@@ -369,7 +443,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text('Delete Account'),
+                            child: const Text(
+                              'Delete Account',
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -386,14 +467,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                             child: _isSaving
                                 ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.background,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Text('Update Data'),
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: AppColors.background,
+                                strokeWidth: 2,
+                              ),
+                            )
+                                : const Text(
+                              'Update Data',
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -432,11 +520,26 @@ class _ProfileField extends StatelessWidget {
       controller: controller,
       enabled: enabled,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppColors.white),
+      style: const TextStyle(
+        color: AppColors.white,
+        fontFamily: 'Roboto',
+        fontSize: 20,
+        fontWeight: FontWeight.w400,
+      ),
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFFB6B6B6)),
+        hintStyle: const TextStyle(
+          color: Color(0xFFB6B6B6),
+          fontFamily: 'Roboto',
+          fontSize: 20,
+          fontWeight: FontWeight.w400,
+        ),
+        errorStyle: const TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 20,
+          fontWeight: FontWeight.w400,
+        ),
         prefixIcon: Icon(icon, color: AppColors.white),
         filled: true,
         fillColor: _EditProfileScreenState._fieldColor,
@@ -450,7 +553,10 @@ class _ProfileField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.accent,
+            width: 1.5,
+          ),
         ),
       ),
     );
